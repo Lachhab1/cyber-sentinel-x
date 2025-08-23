@@ -2,95 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* X-AutoPentest Cybersecurity Platform Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Cybersecurity Dark Theme */
+    --background: 210 11% 6%;
+    --foreground: 120 100% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 210 15% 8%;
+    --card-foreground: 120 100% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 210 15% 8%;
+    --popover-foreground: 120 100% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Neon Green Primary (Cyber Security Theme) */
+    --primary: 142 76% 55%;
+    --primary-foreground: 210 11% 6%;
+    --primary-glow: 142 100% 65%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Electric Blue Secondary */
+    --secondary: 210 15% 12%;
+    --secondary-foreground: 190 100% 85%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 15% 10%;
+    --muted-foreground: 120 50% 70%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 190 100% 50%;
+    --accent-foreground: 210 11% 6%;
 
-    --destructive: 0 84.2% 60.2%;
+    /* Threat Colors */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
+    --warning: 45 93% 58%;
+    --warning-foreground: 210 11% 6%;
+    --success: 142 76% 55%;
+    --success-foreground: 210 11% 6%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 210 15% 15%;
+    --input: 210 15% 12%;
+    --ring: 142 76% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Sidebar Cyber Theme */
+    --sidebar-background: 210 15% 5%;
+    --sidebar-foreground: 120 100% 90%;
+    --sidebar-primary: 142 76% 55%;
+    --sidebar-primary-foreground: 210 11% 6%;
+    --sidebar-accent: 210 15% 10%;
+    --sidebar-accent-foreground: 120 100% 90%;
+    --sidebar-border: 210 15% 12%;
+    --sidebar-ring: 142 76% 55%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Custom Cyber Gradients */
+    --gradient-cyber: linear-gradient(135deg, hsl(142 76% 55% / 0.1), hsl(190 100% 50% / 0.1));
+    --gradient-threat: linear-gradient(135deg, hsl(0 84% 60% / 0.1), hsl(45 93% 58% / 0.1));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 55% / 0.2), hsl(120 100% 25% / 0.1));
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Glowing Effects */
+    --shadow-cyber: 0 0 20px hsl(142 76% 55% / 0.3);
+    --shadow-threat: 0 0 20px hsl(0 84% 60% / 0.3);
+    --shadow-accent: 0 0 20px hsl(190 100% 50% / 0.3);
 
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Animations */
+    --transition-cyber: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  .light {
+    /* Light mode overrides for accessibility */
+    --background: 0 0% 100%;
+    --foreground: 210 15% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 15% 15%;
+    --primary: 142 76% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 210 15% 15%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 190 100% 40%;
+    --accent-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 142 76% 45%;
   }
 }
 
@@ -100,6 +97,69 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono;
+    background-image: 
+      radial-gradient(circle at 20% 80%, hsl(142 76% 55% / 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(190 100% 50% / 0.05) 0%, transparent 50%);
   }
+
+  /* Cyber Grid Background */
+  .cyber-grid {
+    background-image: 
+      linear-gradient(hsl(210 15% 12% / 0.8) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(210 15% 12% / 0.8) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Glowing Effects */
+  .glow-primary {
+    box-shadow: var(--shadow-cyber);
+  }
+
+  .glow-threat {
+    box-shadow: var(--shadow-threat);
+  }
+
+  .glow-accent {
+    box-shadow: var(--shadow-accent);
+  }
+
+  /* Pulse Animation for Live Data */
+  @keyframes pulse-cyber {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  .pulse-cyber {
+    animation: pulse-cyber 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Scan Line Effect */
+  @keyframes scan-line {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .scan-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, hsl(142 76% 55% / 0.3), transparent);
+    animation: scan-line 3s linear infinite;
+  }
+
+  /* Cyber Terminal Font */
+  .font-cyber {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-variant-ligatures: none;
+  }
+
+  /* Status Indicators */
+  .status-critical { @apply text-destructive; }
+  .status-warning { @apply text-warning; }
+  .status-success { @apply text-success; }
+  .status-info { @apply text-accent; }
 }
