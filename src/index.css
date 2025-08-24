@@ -114,93 +114,18 @@
     position: relative;
   }
 
-  .cyber-grid::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-      linear-gradient(45deg, hsl(0 85% 55% / 0.02) 25%, transparent 25%),
-      linear-gradient(-45deg, hsl(0 85% 55% / 0.02) 25%, transparent 25%);
-    background-size: 40px 40px;
-    animation: cyber-pulse 4s ease-in-out infinite;
+  /* Subtle Professional Effects */
+  .glow-subtle {
+    box-shadow: 0 4px 20px hsl(0 85% 55% / 0.08);
   }
 
-  /* Modern Glowing Effects */
-  .glow-primary {
-    box-shadow: var(--shadow-primary);
+  .pulse-status {
+    animation: pulse-status 3s ease-in-out infinite;
   }
 
-  .glow-warning {
-    box-shadow: var(--shadow-warning);
-  }
-
-  .glow-accent {
-    box-shadow: var(--shadow-accent);
-  }
-
-  /* Futuristic Animations */
-  @keyframes cyber-pulse {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.01); }
-  }
-
-  @keyframes pulse-cyber {
-    0%, 100% { 
-      opacity: 1; 
-      transform: scale(1);
-      box-shadow: 0 0 20px hsl(0 85% 55% / 0.3);
-    }
-    50% { 
-      opacity: 0.9; 
-      transform: scale(1.02);
-      box-shadow: 0 0 30px hsl(0 85% 55% / 0.5);
-    }
-  }
-
-  .pulse-cyber {
-    animation: pulse-cyber 2s ease-in-out infinite;
-  }
-
-  /* Cyber Scan Line Effect */
-  @keyframes scan-line {
-    0% { transform: translateX(-100%); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { transform: translateX(100%); opacity: 0; }
-  }
-
-  @keyframes matrix-rain {
-    0% { transform: translateY(-100%); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { transform: translateY(100vh); opacity: 0; }
-  }
-
-  .scan-line::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, hsl(0 85% 55% / 0.4), hsl(0 100% 70% / 0.2), transparent);
-    animation: scan-line 3s ease-in-out infinite;
-  }
-
-  /* Glitch Effect */
-  @keyframes glitch {
-    0%, 100% { transform: translate(0); }
-    20% { transform: translate(-2px, 2px); }
-    40% { transform: translate(-2px, -2px); }
-    60% { transform: translate(2px, 2px); }
-    80% { transform: translate(2px, -2px); }
-  }
-
-  .glitch {
-    animation: glitch 0.3s ease-in-out infinite;
+  @keyframes pulse-status {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
   }
 
   /* Modern Typography */

@@ -63,7 +63,7 @@ function AppContent() {
               <SidebarTrigger className="-ml-1" />
               <div className="flex-1" />
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="w-2 h-2 bg-success rounded-full pulse-cyber" />
+                <div className="w-2 h-2 bg-success rounded-full pulse-status" />
                 <span className="font-cyber">X-AutoPentest Online</span>
               </div>
             </header>

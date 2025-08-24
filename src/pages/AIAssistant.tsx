@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import {
   Brain,
   MessageSquare,
@@ -15,10 +15,12 @@ import {
   AlertTriangle,
   Lightbulb,
   BookOpen,
-  ExternalLink
+  ExternalLink,
+  Loader
 } from "lucide-react";
 
 export default function AIAssistant() {
+  const { toast } = useToast();
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -45,6 +47,16 @@ export default function AIAssistant() {
   ]);
 
   const [currentMessage, setCurrentMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const quickActions = [
     {
@@ -73,29 +85,127 @@ export default function AIAssistant() {
     }
   ];
 
-  const sendMessage = () => {
-    if (!currentMessage.trim()) return;
+  const sendMessage = async () => {
+    if (!currentMessage.trim() || isLoading) return;
     
-    const newMessage = {
-      id: messages.length + 1,
+    const userMessage = {
+      id: Date.now(),
       type: "user" as const,
       content: currentMessage,
       timestamp: new Date().toISOString().replace('T', ' ').substr(0, 19)
     };
     
-    setMessages([...messages, newMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setCurrentMessage("");
+    setIsLoading(true);
     
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse = {
-        id: messages.length + 2,
-        type: "bot" as const,
-        content: "I'm analyzing your request. This is a simulated response. In a real implementation, this would connect to an AI service to provide detailed security analysis and recommendations.",
-        timestamp: new Date().toISOString().replace('T', ' ').substr(0, 19)
+    try {
+      // Generate contextual AI responses based on the message content
+      const responses = {
+        'sql injection': {
+          content: `**SQL Injection Analysis Complete**
+
+**Threat Assessment:**
+- **MITRE Technique:** T1190 - Exploit Public-Facing Application
+- **Attack Vector:** Union-based SQL injection targeting authentication bypass
+- **Risk Level:** Critical - Potential database compromise
+
+**Immediate Actions:**
+1. Block attacking IP: \`iptables -A INPUT -s <IP> -j DROP\`
+2. Review authentication logs for privilege escalation
+3. Deploy emergency WAF rule for SQL injection patterns
+
+**Long-term Mitigations:**
+- Implement parameterized queries across all database interfaces
+- Enable database query logging and monitoring
+- Conduct security code review for vulnerable endpoints
+
+Would you like me to generate specific WAF rules or investigate related incidents?`,
+          attachments: [
+            { type: "mitre", technique: "T1190", name: "Exploit Public-Facing Application" },
+            { type: "rule", name: "Emergency WAF Rule", preview: "SecRule ARGS \"@detectSQLi\" \"id:1001,phase:2,block\"" }
+          ]
+        },
+        'threat hunt': {
+          content: `**Threat Hunting Query Generated**
+
+**Advanced Persistent Threat Detection:**
+
+\`\`\`sql
+-- Suspicious authentication patterns
+SELECT user_id, source_ip, COUNT(*) as attempts
+FROM auth_logs 
+WHERE timestamp > NOW() - INTERVAL '24 hours'
+  AND status = 'failed'
+GROUP BY user_id, source_ip
+HAVING COUNT(*) > 10;
+\`\`\`
+
+**Behavioral Analytics:**
+- Monitor for unusual login times outside business hours
+- Detect lateral movement patterns across internal networks
+- Identify privilege escalation attempts
+
+**Recommended IOCs to monitor:**
+- Multiple failed login attempts from single IP
+- Authentication from geographically impossible locations
+- Unusual data transfer volumes during off-hours
+
+Would you like me to create additional hunting queries for specific attack techniques?`,
+          attachments: [
+            { type: "rule", name: "Lateral Movement Detection", preview: "index=security EventCode=4624 | stats count by Computer, Account_Name" }
+          ]
+        }
       };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
+
+      let responseContent = responses['sql injection'].content;
+      let attachments = responses['sql injection'].attachments;
+
+      if (currentMessage.toLowerCase().includes('threat hunt')) {
+        responseContent = responses['threat hunt'].content;
+        attachments = responses['threat hunt'].attachments;
+      } else if (currentMessage.toLowerCase().includes('incident') || currentMessage.toLowerCase().includes('192.168')) {
+        responseContent = responses['sql injection'].content;
+        attachments = responses['sql injection'].attachments;
+      } else {
+        responseContent = `**Security Analysis**
+
+I've analyzed your query regarding: "${currentMessage}"
+
+**Key Findings:**
+- No immediate threats detected in this context
+- Recommend implementing proactive monitoring measures
+- Consider reviewing security policies for related scenarios
+
+**Next Steps:**
+1. Monitor relevant security logs for similar patterns
+2. Update threat detection rules if necessary
+3. Document findings for future reference
+
+How can I help you investigate this further?`;
+        attachments = undefined;
+      }
+
+      setTimeout(() => {
+        const aiResponse = {
+          id: Date.now() + 1,
+          type: "bot" as const,
+          content: responseContent,
+          timestamp: new Date().toISOString().replace('T', ' ').substr(0, 19),
+          attachments
+        };
+        setMessages(prev => [...prev, aiResponse]);
+        setIsLoading(false);
+      }, 1500);
+
+    } catch (error) {
+      setIsLoading(false);
+      toast({
+        title: "AI Assistant Error",
+        description: "Unable to process your request. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const executeQuickAction = (action: string) => {
@@ -118,7 +228,7 @@ export default function AIAssistant() {
           <p className="text-muted-foreground font-cyber">Intelligent security analysis and MITRE ATT&CK mapping</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-success rounded-full pulse-cyber" />
+          <div className="w-2 h-2 bg-success rounded-full pulse-status" />
           <span className="text-sm text-muted-foreground">AI Online</span>
         </div>
       </div>
@@ -190,6 +300,22 @@ export default function AIAssistant() {
                   </div>
                 </div>
               ))}
+              {isLoading && (
+                <div className="flex gap-3 justify-start">
+                  <div className="flex gap-3 max-w-[80%]">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-accent">
+                      <Bot className="w-4 h-4 text-accent-foreground" />
+                    </div>
+                    <div className="rounded-lg p-4 bg-muted/50 text-card-foreground">
+                      <div className="flex items-center gap-2">
+                        <Loader className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Analyzing...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}
@@ -206,8 +332,16 @@ export default function AIAssistant() {
                   }
                 }}
               />
-              <Button onClick={sendMessage} className="self-end">
-                <Send className="w-4 h-4" />
+              <Button 
+                onClick={sendMessage} 
+                className="self-end"
+                disabled={isLoading || !currentMessage.trim()}
+              >
+                {isLoading ? (
+                  <Loader className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </Button>
             </div>
           </CardContent>

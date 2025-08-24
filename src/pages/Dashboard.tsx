@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Activity,
   AlertTriangle,
@@ -11,10 +14,51 @@ import {
   Eye,
   Clock,
   Users,
-  Target
+  Target,
+  Scan,
+  PlayCircle
 } from "lucide-react";
 
 export default function Dashboard() {
+  const { toast } = useToast();
+  const [scanRunning, setScanRunning] = useState(false);
+
+  const handleSecurityScan = async () => {
+    setScanRunning(true);
+    try {
+      toast({
+        title: "Security Scan Initiated",
+        description: "Running comprehensive security assessment...",
+      });
+      
+      // Simulate scan process
+      setTimeout(() => {
+        setScanRunning(false);
+        toast({
+          title: "Security Scan Complete",
+          description: "Found 3 low-risk vulnerabilities. Check Reports for details.",
+        });
+      }, 3000);
+    } catch (error) {
+      setScanRunning(false);
+      toast({
+        title: "Scan Failed",
+        description: "Unable to complete security scan. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleThreatHunt = () => {
+    toast({
+      title: "Threat Hunt Started",
+      description: "Analyzing network traffic for suspicious patterns...",
+    });
+  };
+
+  const handleUserActivity = () => {
+    window.location.href = "/settings";
+  };
   const stats = [
     { 
       title: "Active Threats", 
@@ -104,8 +148,8 @@ export default function Dashboard() {
           <p className="text-muted-foreground font-cyber">Real-time threat monitoring and system overview</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="w-2 h-2 bg-success rounded-full pulse-cyber" />
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="w-2 h-2 bg-success rounded-full pulse-status" />
             <span>Live</span>
           </div>
           <Button variant="outline" size="sm">
@@ -187,15 +231,35 @@ export default function Dashboard() {
               <CardTitle className="text-primary font-cyber">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start" size="sm">
-                <Zap className="w-4 h-4 mr-2" />
-                Run Security Scan
+              <Button 
+                variant="outline" 
+                className="w-full justify-start" 
+                size="sm"
+                onClick={handleSecurityScan}
+                disabled={scanRunning}
+              >
+                {scanRunning ? (
+                  <Scan className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4 mr-2" />
+                )}
+                {scanRunning ? "Scanning..." : "Run Security Scan"}
               </Button>
-              <Button variant="outline" className="w-full justify-start" size="sm">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start" 
+                size="sm"
+                onClick={handleThreatHunt}
+              >
                 <Target className="w-4 h-4 mr-2" />
                 Threat Hunt
               </Button>
-              <Button variant="outline" className="w-full justify-start" size="sm">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start" 
+                size="sm"
+                onClick={handleUserActivity}
+              >
                 <Users className="w-4 h-4 mr-2" />
                 User Activity
               </Button>
