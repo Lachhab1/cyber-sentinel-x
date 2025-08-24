@@ -22,10 +22,10 @@ const NotFound = () => {
         </div>
         
         <div className="space-y-2">
-          <h1 className="text-6xl font-bold text-primary font-cyber">404</h1>
+          <h1 className="text-6xl font-bold text-primary">404</h1>
           <h2 className="text-2xl font-semibold text-card-foreground">Security Zone Not Found</h2>
           <p className="text-muted-foreground">
-            The requested security module or page could not be located in the X-AutoPentest system.
+            The requested security module or page could not be located in the SecureOps system.
           </p>
         </div>
 
@@ -42,7 +42,7 @@ const NotFound = () => {
           </Button>
         </div>
 
-        <div className="text-xs text-muted-foreground font-cyber">
+        <div className="text-xs text-muted-foreground">
           Error Code: SEC_404 | Path: {location.pathname}
         </div>
       </div>

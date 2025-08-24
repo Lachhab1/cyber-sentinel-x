@@ -73,17 +73,18 @@ export default {
 				}
 			},
 			backgroundImage: {
-				'gradient-cyber': 'var(--gradient-cyber)',
-				'gradient-threat': 'var(--gradient-threat)',
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-warning': 'var(--gradient-warning)',
 				'gradient-success': 'var(--gradient-success)'
 			},
 			boxShadow: {
-				'cyber': 'var(--shadow-cyber)',
-				'threat': 'var(--shadow-threat)',
+				'primary': 'var(--shadow-primary)',
+				'warning': 'var(--shadow-warning)',
 				'accent': 'var(--shadow-accent)'
 			},
 			fontFamily: {
-				'cyber': ['JetBrains Mono', 'Courier New', 'monospace']
+				'mono': ['JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'monospace'],
+				'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

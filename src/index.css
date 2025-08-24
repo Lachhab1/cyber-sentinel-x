@@ -2,92 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
-/* X-AutoPentest Cybersecurity Platform Design System */
+/* Modern Professional Security Platform Design System */
 
 @layer base {
   :root {
-    /* Cybersecurity Dark Theme */
-    --background: 210 11% 6%;
-    --foreground: 120 100% 95%;
+    /* Modern Dark Theme */
+    --background: 224 20% 4%;
+    --foreground: 220 14% 96%;
 
-    --card: 210 15% 8%;
-    --card-foreground: 120 100% 95%;
+    --card: 224 25% 6%;
+    --card-foreground: 220 14% 96%;
 
-    --popover: 210 15% 8%;
-    --popover-foreground: 120 100% 95%;
+    --popover: 224 25% 6%;
+    --popover-foreground: 220 14% 96%;
 
-    /* Neon Green Primary (Cyber Security Theme) */
-    --primary: 142 76% 55%;
-    --primary-foreground: 210 11% 6%;
-    --primary-glow: 142 100% 65%;
+    /* Rich Purple Primary */
+    --primary: 262 65% 62%;
+    --primary-foreground: 220 14% 96%;
+    --primary-glow: 262 80% 72%;
 
-    /* Electric Blue Secondary */
-    --secondary: 210 15% 12%;
-    --secondary-foreground: 190 100% 85%;
+    /* Deep Blue Secondary */
+    --secondary: 224 30% 8%;
+    --secondary-foreground: 220 14% 96%;
 
-    --muted: 210 15% 10%;
-    --muted-foreground: 120 50% 70%;
+    --muted: 224 25% 7%;
+    --muted-foreground: 220 8% 55%;
 
-    --accent: 190 100% 50%;
-    --accent-foreground: 210 11% 6%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 220 14% 96%;
 
-    /* Threat Colors */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --warning: 45 93% 58%;
-    --warning-foreground: 210 11% 6%;
-    --success: 142 76% 55%;
-    --success-foreground: 210 11% 6%;
+    /* Status Colors */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 220 14% 96%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 20 14% 4%;
+    --success: 142 69% 58%;
+    --success-foreground: 220 14% 96%;
 
-    --border: 210 15% 15%;
-    --input: 210 15% 12%;
-    --ring: 142 76% 55%;
+    --border: 224 25% 12%;
+    --input: 224 25% 8%;
+    --ring: 262 65% 62%;
 
     --radius: 0.75rem;
 
-    /* Sidebar Cyber Theme */
-    --sidebar-background: 210 15% 5%;
-    --sidebar-foreground: 120 100% 90%;
-    --sidebar-primary: 142 76% 55%;
-    --sidebar-primary-foreground: 210 11% 6%;
-    --sidebar-accent: 210 15% 10%;
-    --sidebar-accent-foreground: 120 100% 90%;
-    --sidebar-border: 210 15% 12%;
-    --sidebar-ring: 142 76% 55%;
+    /* Sidebar Modern Theme */
+    --sidebar-background: 224 30% 3%;
+    --sidebar-foreground: 220 14% 96%;
+    --sidebar-primary: 262 65% 62%;
+    --sidebar-primary-foreground: 220 14% 96%;
+    --sidebar-accent: 224 25% 7%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 224 25% 10%;
+    --sidebar-ring: 262 65% 62%;
 
-    /* Custom Cyber Gradients */
-    --gradient-cyber: linear-gradient(135deg, hsl(142 76% 55% / 0.1), hsl(190 100% 50% / 0.1));
-    --gradient-threat: linear-gradient(135deg, hsl(0 84% 60% / 0.1), hsl(45 93% 58% / 0.1));
-    --gradient-success: linear-gradient(135deg, hsl(142 76% 55% / 0.2), hsl(120 100% 25% / 0.1));
+    /* Modern Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(262 65% 62% / 0.1), hsl(217 91% 60% / 0.1));
+    --gradient-warning: linear-gradient(135deg, hsl(0 72% 51% / 0.1), hsl(38 92% 50% / 0.1));
+    --gradient-success: linear-gradient(135deg, hsl(142 69% 58% / 0.1), hsl(158 64% 52% / 0.1));
 
-    /* Glowing Effects */
-    --shadow-cyber: 0 0 20px hsl(142 76% 55% / 0.3);
-    --shadow-threat: 0 0 20px hsl(0 84% 60% / 0.3);
-    --shadow-accent: 0 0 20px hsl(190 100% 50% / 0.3);
+    /* Elegant Glows */
+    --shadow-primary: 0 8px 32px hsl(262 65% 62% / 0.25);
+    --shadow-warning: 0 8px 32px hsl(0 72% 51% / 0.25);
+    --shadow-accent: 0 8px 32px hsl(217 91% 60% / 0.25);
 
-    /* Animations */
-    --transition-cyber: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Smooth Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .light {
-    /* Light mode overrides for accessibility */
+    /* Light mode for better accessibility */
     --background: 0 0% 100%;
-    --foreground: 210 15% 15%;
+    --foreground: 224 20% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 210 15% 15%;
+    --card-foreground: 224 20% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 15% 15%;
-    --primary: 142 76% 45%;
+    --popover-foreground: 224 20% 15%;
+    --primary: 262 65% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 210 15% 15%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 190 100% 40%;
+    --secondary: 220 13% 95%;
+    --secondary-foreground: 224 20% 15%;
+    --muted: 220 13% 95%;
+    --muted-foreground: 220 8% 45%;
+    --accent: 217 91% 50%;
     --accent-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 142 76% 45%;
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 262 65% 45%;
   }
 }
 
@@ -97,44 +97,45 @@
   }
 
   body {
-    @apply bg-background text-foreground font-mono;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-image: 
-      radial-gradient(circle at 20% 80%, hsl(142 76% 55% / 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(190 100% 50% / 0.05) 0%, transparent 50%);
+      radial-gradient(circle at 20% 80%, hsl(262 65% 62% / 0.04) 0%, transparent 60%),
+      radial-gradient(circle at 80% 20%, hsl(217 91% 60% / 0.04) 0%, transparent 60%);
   }
 
-  /* Cyber Grid Background */
+  /* Modern Grid Background */
   .cyber-grid {
     background-image: 
-      linear-gradient(hsl(210 15% 12% / 0.8) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(210 15% 12% / 0.8) 1px, transparent 1px);
-    background-size: 20px 20px;
+      linear-gradient(hsl(224 25% 12% / 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(224 25% 12% / 0.4) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
-  /* Glowing Effects */
+  /* Modern Glowing Effects */
   .glow-primary {
-    box-shadow: var(--shadow-cyber);
+    box-shadow: var(--shadow-primary);
   }
 
-  .glow-threat {
-    box-shadow: var(--shadow-threat);
+  .glow-warning {
+    box-shadow: var(--shadow-warning);
   }
 
   .glow-accent {
     box-shadow: var(--shadow-accent);
   }
 
-  /* Pulse Animation for Live Data */
-  @keyframes pulse-cyber {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+  /* Smooth Pulse Animation */
+  @keyframes pulse-modern {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.02); }
   }
 
   .pulse-cyber {
-    animation: pulse-cyber 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: pulse-modern 2s ease-in-out infinite;
   }
 
-  /* Scan Line Effect */
+  /* Elegant Scan Line Effect */
   @keyframes scan-line {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
@@ -147,14 +148,14 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg, transparent, hsl(142 76% 55% / 0.3), transparent);
-    animation: scan-line 3s linear infinite;
+    background: linear-gradient(90deg, transparent, hsl(262 65% 62% / 0.2), transparent);
+    animation: scan-line 4s ease-in-out infinite;
   }
 
-  /* Cyber Terminal Font */
+  /* Modern Typography */
   .font-cyber {
-    font-family: 'JetBrains Mono', 'Courier New', monospace;
-    font-variant-ligatures: none;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-variant-ligatures: common-ligatures;
   }
 
   /* Status Indicators */

@@ -31,7 +31,7 @@ const App = () => (
                 <div className="flex-1" />
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="w-2 h-2 bg-success rounded-full pulse-cyber" />
-                  <span className="font-cyber">X-AutoPentest Active</span>
+                  <span>SecureOps Platform</span>
                 </div>
               </header>
               <main className="flex-1 p-6">

@@ -73,15 +73,15 @@ export function AppSidebar() {
           </div>
           {!isCollapsed && (
             <div>
-              <h1 className="text-lg font-bold text-primary font-cyber">X-AutoPentest</h1>
-              <p className="text-xs text-muted-foreground">Security Operations</p>
+              <h1 className="text-lg font-bold text-primary">SecureOps</h1>
+              <p className="text-xs text-muted-foreground">Security Platform</p>
             </div>
           )}
         </div>
 
         {/* Main Navigation */}
         <SidebarGroup className="mt-4">
-          <SidebarGroupLabel className="text-primary font-cyber">
+          <SidebarGroupLabel className="text-primary">
             {!isCollapsed && "Security Operations"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -95,7 +95,7 @@ export function AppSidebar() {
                       className={getNavCls}
                     >
                       <item.icon className="h-5 w-5" />
-                      {!isCollapsed && <span className="font-cyber">{item.title}</span>}
+                      {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -106,7 +106,7 @@ export function AppSidebar() {
 
         {/* System Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-accent font-cyber">
+          <SidebarGroupLabel className="text-accent">
             {!isCollapsed && "System"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -119,7 +119,7 @@ export function AppSidebar() {
                       className={getNavCls}
                     >
                       <item.icon className="h-5 w-5" />
-                      {!isCollapsed && <span className="font-cyber">{item.title}</span>}
+                      {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -133,11 +133,11 @@ export function AppSidebar() {
           <div className="mt-auto p-4 border-t border-border/50">
             <div className="flex items-center gap-2 text-xs">
               <div className="w-2 h-2 bg-success rounded-full pulse-cyber" />
-              <span className="text-muted-foreground font-cyber">System Online</span>
+              <span className="text-muted-foreground">System Online</span>
             </div>
             <div className="flex items-center gap-2 text-xs mt-1">
               <Eye className="w-3 h-3 text-accent" />
-              <span className="text-muted-foreground font-cyber">Monitoring Active</span>
+              <span className="text-muted-foreground">Monitoring Active</span>
             </div>
           </div>
         )}
