@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AlertTriangle,
   Search,
@@ -16,12 +19,19 @@ import {
   Target,
   Zap,
   FileText,
-  ChevronRight
+  ChevronRight,
+  Activity,
+  Terminal,
+  Cpu
 } from "lucide-react";
 
 export default function Incidents() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSeverity, setSelectedSeverity] = useState("all");
+  const [selectedIncident, setSelectedIncident] = useState<any>(null);
+  const [isInvestigating, setIsInvestigating] = useState(false);
+  const [isMitigating, setIsMitigating] = useState(false);
+  const [actionDialog, setActionDialog] = useState<{ type: 'investigate' | 'mitigate' | null, incident: any }>({ type: null, incident: null });
 
   const incidents = [
     {
@@ -104,22 +114,50 @@ export default function Incidents() {
     return "text-muted-foreground";
   };
 
+  const handleInvestigate = async (incident: any) => {
+    setActionDialog({ type: 'investigate', incident });
+    setIsInvestigating(true);
+    
+    // Simulate investigation process
+    toast.success(`Initiating investigation for ${incident.id}`);
+    
+    setTimeout(() => {
+      toast.success("Investigation completed successfully");
+      setIsInvestigating(false);
+      setActionDialog({ type: null, incident: null });
+    }, 3000);
+  };
+
+  const handleMitigate = async (incident: any) => {
+    setActionDialog({ type: 'mitigate', incident });
+    setIsMitigating(true);
+    
+    // Simulate mitigation process
+    toast.success(`Deploying countermeasures for ${incident.id}`);
+    
+    setTimeout(() => {
+      toast.success("Threat successfully mitigated");
+      setIsMitigating(false);
+      setActionDialog({ type: null, incident: null });
+    }, 4000);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-primary font-cyber">Security Incidents</h1>
-          <p className="text-muted-foreground font-cyber">AI-powered threat detection and investigation</p>
+          <h1 className="text-3xl font-bold text-primary font-cyber glitch">Security Incidents</h1>
+          <p className="text-muted-foreground font-cyber">AI-powered threat detection and real-time response</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="font-cyber">
             <Filter className="w-4 h-4 mr-2" />
-            Filters
+            Advanced Filters
           </Button>
-          <Button size="sm">
+          <Button size="sm" className="font-cyber glow-primary">
             <Target className="w-4 h-4 mr-2" />
-            New Hunt
+            Threat Hunt
           </Button>
         </div>
       </div>
@@ -232,19 +270,31 @@ export default function Incidents() {
                         </Badge>
                       ))}
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="w-4 h-4 mr-2" />
-                        Investigate
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Zap className="w-4 h-4 mr-2" />
-                        Mitigate
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </div>
+                     <div className="flex gap-2">
+                       <Button 
+                         variant="outline" 
+                         size="sm" 
+                         onClick={() => handleInvestigate(incident)}
+                         disabled={isInvestigating || isMitigating}
+                         className="font-cyber hover:bg-accent/20"
+                       >
+                         <Eye className="w-4 h-4 mr-2" />
+                         Investigate
+                       </Button>
+                       <Button 
+                         variant="outline" 
+                         size="sm" 
+                         onClick={() => handleMitigate(incident)}
+                         disabled={isInvestigating || isMitigating}
+                         className="font-cyber hover:bg-destructive/20 hover:text-destructive"
+                       >
+                         <Zap className="w-4 h-4 mr-2" />
+                         Mitigate
+                       </Button>
+                       <Button variant="ghost" size="sm" className="font-cyber">
+                         <ChevronRight className="w-4 h-4" />
+                       </Button>
+                     </div>
                   </div>
                 </div>
               </div>
@@ -255,10 +305,73 @@ export default function Incidents() {
 
       {/* Load More */}
       <div className="text-center">
-        <Button variant="outline">
+        <Button variant="outline" className="font-cyber">
+          <Terminal className="w-4 h-4 mr-2" />
           Load More Incidents
         </Button>
       </div>
+
+      {/* Action Dialog */}
+      <Dialog open={actionDialog.type !== null} onOpenChange={() => setActionDialog({ type: null, incident: null })}>
+        <DialogContent className="bg-card/90 backdrop-blur-lg border-border/50 font-cyber">
+          <DialogHeader>
+            <DialogTitle className="text-primary flex items-center gap-2">
+              {actionDialog.type === 'investigate' ? (
+                <>
+                  <Eye className="w-5 h-5" />
+                  Investigating Incident
+                </>
+              ) : (
+                <>
+                  <Zap className="w-5 h-5" />
+                  Mitigating Threat
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription className="font-cyber">
+              {actionDialog.type === 'investigate' 
+                ? "Performing deep forensic analysis and gathering threat intelligence..."
+                : "Deploying automated countermeasures and blocking malicious activity..."
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-3">
+              <Cpu className="w-5 h-5 text-primary animate-spin" />
+              <span className="text-sm">
+                {actionDialog.type === 'investigate'
+                  ? isInvestigating ? "Analysis in progress..." : "Investigation complete"
+                  : isMitigating ? "Deploying countermeasures..." : "Mitigation complete"
+                }
+              </span>
+            </div>
+            
+            {actionDialog.incident && (
+              <div className="bg-muted/20 rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <Shield className="w-4 h-4 text-primary" />
+                  <span className="font-medium">Target: {actionDialog.incident.id}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Activity className="w-4 h-4 text-accent" />
+                  <span>Severity: {actionDialog.incident.severity}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Globe className="w-4 h-4 text-warning" />
+                  <span>Source: {actionDialog.incident.source}</span>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex gap-2 text-xs text-muted-foreground">
+              <span>• Real-time threat analysis</span>
+              <span>• MITRE ATT&CK mapping</span>
+              <span>• Automated response protocols</span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
