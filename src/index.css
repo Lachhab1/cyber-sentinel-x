@@ -2,92 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
-/* X-AutoPentest - Futuristic Red Cyber Security Design System */
+/* X-AutoPentest - Soft Eye-Friendly Security Design System */
 
 @layer base {
   :root {
-    /* Cyber Dark Theme */
-    --background: 0 0% 2%;
-    --foreground: 0 0% 95%;
+    /* Soft Eye-Friendly Theme */
+    --background: 213 100% 15%;
+    --foreground: 345 30% 85%;
 
-    --card: 0 20% 4%;
-    --card-foreground: 0 0% 95%;
+    --card: 213 80% 18%;
+    --card-foreground: 345 20% 88%;
 
-    --popover: 0 20% 4%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 213 80% 18%;
+    --popover-foreground: 345 20% 88%;
 
-    /* Electric Red Primary */
-    --primary: 0 85% 55%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 0 100% 70%;
+    /* Primary Pink */
+    --primary: 345 100% 56%;
+    --primary-foreground: 213 100% 15%;
+    --primary-glow: 345 80% 65%;
 
-    /* Deep Black Secondary */
-    --secondary: 0 10% 8%;
-    --secondary-foreground: 0 0% 95%;
+    /* Soft Secondary */
+    --secondary: 320 30% 25%;
+    --secondary-foreground: 345 20% 85%;
 
-    --muted: 0 15% 6%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 213 60% 20%;
+    --muted-foreground: 345 15% 65%;
 
-    --accent: 14 100% 50%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 343 77% 35%;
+    --accent-foreground: 345 20% 90%;
 
-    /* Status Colors */
-    --destructive: 0 85% 55%;
-    --destructive-foreground: 0 0% 98%;
-    --warning: 35 100% 50%;
-    --warning-foreground: 0 0% 2%;
-    --success: 120 60% 50%;
-    --success-foreground: 0 0% 98%;
+    /* Gentle Status Colors */
+    --destructive: 345 70% 50%;
+    --destructive-foreground: 213 100% 15%;
+    --warning: 35 80% 55%;
+    --warning-foreground: 213 100% 15%;
+    --success: 120 50% 45%;
+    --success-foreground: 213 100% 15%;
 
-    --border: 0 30% 12%;
-    --input: 0 25% 8%;
-    --ring: 0 85% 55%;
+    --border: 213 40% 25%;
+    --input: 213 60% 22%;
+    --ring: 345 80% 50%;
 
     --radius: 0.75rem;
 
-    /* Cyber Sidebar Theme */
-    --sidebar-background: 0 25% 2%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 85% 55%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 20% 6%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 30% 10%;
-    --sidebar-ring: 0 85% 55%;
+    /* Soft Sidebar Theme */
+    --sidebar-background: 213 90% 16%;
+    --sidebar-foreground: 345 20% 85%;
+    --sidebar-primary: 345 100% 56%;
+    --sidebar-primary-foreground: 213 100% 15%;
+    --sidebar-accent: 213 60% 20%;
+    --sidebar-accent-foreground: 345 20% 85%;
+    --sidebar-border: 213 50% 22%;
+    --sidebar-ring: 345 80% 50%;
 
-    /* Futuristic Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(0 85% 55% / 0.15), hsl(14 100% 50% / 0.1));
-    --gradient-warning: linear-gradient(135deg, hsl(0 85% 55% / 0.1), hsl(35 100% 50% / 0.1));
-    --gradient-success: linear-gradient(135deg, hsl(120 60% 50% / 0.1), hsl(140 70% 45% / 0.1));
+    /* Gentle Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(345 100% 56% / 0.08), hsl(343 77% 35% / 0.06));
+    --gradient-warning: linear-gradient(135deg, hsl(345 70% 50% / 0.06), hsl(35 80% 55% / 0.06));
+    --gradient-success: linear-gradient(135deg, hsl(120 50% 45% / 0.06), hsl(140 60% 40% / 0.06));
 
-    /* Cyber Glows */
-    --shadow-primary: 0 10px 40px hsl(0 85% 55% / 0.3);
-    --shadow-warning: 0 10px 40px hsl(35 100% 50% / 0.25);
-    --shadow-accent: 0 10px 40px hsl(14 100% 50% / 0.25);
+    /* Soft Glows */
+    --shadow-primary: 0 8px 32px hsl(345 100% 56% / 0.15);
+    --shadow-warning: 0 8px 32px hsl(35 80% 55% / 0.12);
+    --shadow-accent: 0 8px 32px hsl(343 77% 35% / 0.12);
 
     /* Smooth Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .light {
-    /* Light mode for better accessibility */
-    --background: 0 0% 100%;
-    --foreground: 224 20% 15%;
-    --card: 0 0% 100%;
-    --card-foreground: 224 20% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 20% 15%;
-    --primary: 262 65% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 13% 95%;
-    --secondary-foreground: 224 20% 15%;
-    --muted: 220 13% 95%;
-    --muted-foreground: 220 8% 45%;
-    --accent: 217 91% 50%;
-    --accent-foreground: 0 0% 100%;
-    --border: 220 13% 90%;
-    --input: 220 13% 90%;
-    --ring: 262 65% 45%;
+    /* Light mode with soft palette */
+    --background: 345 20% 96%;
+    --foreground: 213 80% 20%;
+    --card: 345 10% 98%;
+    --card-foreground: 213 80% 20%;
+    --popover: 345 10% 98%;
+    --popover-foreground: 213 80% 20%;
+    --primary: 345 100% 56%;
+    --primary-foreground: 345 20% 96%;
+    --secondary: 213 20% 90%;
+    --secondary-foreground: 213 80% 20%;
+    --muted: 213 15% 92%;
+    --muted-foreground: 213 30% 40%;
+    --accent: 343 77% 35%;
+    --accent-foreground: 345 20% 96%;
+    --border: 213 20% 85%;
+    --input: 213 15% 88%;
+    --ring: 345 100% 56%;
   }
 }
 
@@ -100,23 +100,23 @@
     @apply bg-background text-foreground;
     font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
     background-image: 
-      radial-gradient(circle at 20% 80%, hsl(0 85% 55% / 0.08) 0%, transparent 60%),
-      radial-gradient(circle at 80% 20%, hsl(14 100% 50% / 0.06) 0%, transparent 60%),
-      radial-gradient(circle at 50% 50%, hsl(0 85% 55% / 0.02) 0%, transparent 80%);
+      radial-gradient(circle at 20% 80%, hsl(345 100% 56% / 0.04) 0%, transparent 60%),
+      radial-gradient(circle at 80% 20%, hsl(343 77% 35% / 0.03) 0%, transparent 60%),
+      radial-gradient(circle at 50% 50%, hsl(320 69% 15% / 0.02) 0%, transparent 80%);
   }
 
-  /* Cyber Grid Background */
+  /* Soft Grid Background */
   .cyber-grid {
     background-image: 
-      linear-gradient(hsl(0 30% 15% / 0.6) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(0 30% 15% / 0.6) 1px, transparent 1px);
+      linear-gradient(hsl(213 40% 25% / 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(213 40% 25% / 0.4) 1px, transparent 1px);
     background-size: 20px 20px;
     position: relative;
   }
 
-  /* Subtle Professional Effects */
+  /* Gentle Professional Effects */
   .glow-subtle {
-    box-shadow: 0 4px 20px hsl(0 85% 55% / 0.08);
+    box-shadow: 0 4px 20px hsl(345 100% 56% / 0.06);
   }
 
   .pulse-status {
