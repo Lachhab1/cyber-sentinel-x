@@ -105,13 +105,13 @@ export function AppSidebar() {
                       }
                     >
                       <div className="relative z-10 flex items-center w-full">
-                        <item.icon className={`${open ? 'w-4 h-4' : 'w-5 h-5'} transition-all duration-200 group-hover:scale-110`} />
+                        <item.icon className={`${open ? 'w-4 h-4' : 'w-5 h-5'} transition-all duration-200 group-hover:scale-110 flex-shrink-0`} />
                         {open ? (
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-medium">{item.title}</span>
+                          <div className="flex items-center justify-between w-full ml-3">
+                            <span className="font-medium truncate">{item.title}</span>
                             <Badge 
                               variant="secondary" 
-                              className={`text-xs px-2 py-0 ${item.color} bg-background/50 border-current/20`}
+                              className={`text-xs px-2 py-0 ${item.color} bg-background/50 border-current/20 ml-2 flex-shrink-0`}
                             >
                               {item.stats}
                             </Badge>
@@ -160,13 +160,13 @@ export function AppSidebar() {
                       }
                     >
                       <div className="relative z-10 flex items-center w-full">
-                        <item.icon className={`${open ? 'w-4 h-4' : 'w-5 h-5'} transition-all duration-200 group-hover:scale-110`} />
+                        <item.icon className={`${open ? 'w-4 h-4' : 'w-5 h-5'} transition-all duration-200 group-hover:scale-110 flex-shrink-0`} />
                         {open ? (
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-medium">{item.title}</span>
+                          <div className="flex items-center justify-between w-full ml-3">
+                            <span className="font-medium truncate">{item.title}</span>
                             <Badge 
                               variant="secondary" 
-                              className={`text-xs px-2 py-0 ${item.color} bg-background/50 border-current/20`}
+                              className={`text-xs px-2 py-0 ${item.color} bg-background/50 border-current/20 ml-2 flex-shrink-0`}
                             >
                               {item.stats}
                             </Badge>

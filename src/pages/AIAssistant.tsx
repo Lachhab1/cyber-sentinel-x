@@ -233,9 +233,9 @@ How can I help you investigate this further?`;
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {/* Chat Interface */}
-        <Card className="xl:col-span-3 bg-card/50 backdrop-blur-sm border-border/50">
+        <Card className="lg:col-span-2 xl:col-span-3 bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary font-cyber">
               <Brain className="w-5 h-5" />
@@ -359,13 +359,13 @@ How can I help you investigate this further?`;
                 <Button
                   key={index}
                   variant="outline"
-                  className="w-full justify-start h-auto p-3"
+                  className="w-full justify-start h-auto p-3 text-left"
                   onClick={() => executeQuickAction(action.action)}
                 >
                   <action.icon className="w-4 h-4 mr-3 flex-shrink-0" />
-                  <div className="text-left">
-                    <div className="font-semibold text-sm">{action.title}</div>
-                    <div className="text-xs text-muted-foreground">{action.description}</div>
+                  <div className="text-left min-w-0 flex-1">
+                    <div className="font-semibold text-sm truncate">{action.title}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-2">{action.description}</div>
                   </div>
                 </Button>
               ))}
