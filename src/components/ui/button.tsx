@@ -9,16 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-md",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-md transition-all duration-200",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-warning/20 shadow-md",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-warning/20 shadow-md transition-all duration-200",
         outline:
-          "border border-input bg-background hover:bg-primary/10 hover:text-primary hover:border-primary/30",
+          "border border-input bg-background/50 hover:bg-primary/8 hover:text-primary hover:border-primary/30 transition-all duration-200 backdrop-blur",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm",
-        ghost: "hover:bg-primary/10 hover:text-primary",
-        link: "text-primary underline-offset-4 hover:underline",
-        premium: "bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-primary/30 shadow-lg border border-primary/20",
+          "bg-secondary/80 text-secondary-foreground hover:bg-secondary/90 shadow-sm transition-all duration-200 backdrop-blur",
+        ghost: "hover:bg-primary/8 hover:text-primary transition-all duration-200",
+        link: "text-primary underline-offset-4 hover:underline transition-all duration-200",
+        premium: "bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-primary/30 shadow-lg border border-primary/20 transition-all duration-200",
+        soft: "bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-all duration-200",
       },
       size: {
         default: "h-10 px-4 py-2",

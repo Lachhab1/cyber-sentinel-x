@@ -70,24 +70,49 @@
   }
 
   .light {
-    /* Light mode with soft palette */
-    --background: 345 20% 96%;
-    --foreground: 213 80% 20%;
-    --card: 345 10% 98%;
-    --card-foreground: 213 80% 20%;
-    --popover: 345 10% 98%;
-    --popover-foreground: 213 80% 20%;
-    --primary: 345 100% 56%;
-    --primary-foreground: 345 20% 96%;
-    --secondary: 213 20% 90%;
-    --secondary-foreground: 213 80% 20%;
-    --muted: 213 15% 92%;
-    --muted-foreground: 213 30% 40%;
-    --accent: 343 77% 35%;
-    --accent-foreground: 345 20% 96%;
-    --border: 213 20% 85%;
-    --input: 213 15% 88%;
-    --ring: 345 100% 56%;
+    /* Light mode - Ultra soft & eye-friendly */
+    --background: 345 12% 97%;
+    --foreground: 213 25% 35%;
+    --card: 345 8% 99%;
+    --card-foreground: 213 20% 40%;
+    --popover: 345 8% 99%;
+    --popover-foreground: 213 20% 40%;
+    
+    /* Softer primary for light mode */
+    --primary: 345 70% 45%;
+    --primary-foreground: 345 15% 98%;
+    --primary-glow: 345 60% 55%;
+    
+    /* Ultra soft secondary */
+    --secondary: 213 15% 92%;
+    --secondary-foreground: 213 30% 35%;
+    
+    --muted: 213 10% 94%;
+    --muted-foreground: 213 20% 50%;
+    --accent: 343 50% 40%;
+    --accent-foreground: 345 15% 98%;
+    
+    /* Gentle status colors for light mode */
+    --destructive: 345 50% 50%;
+    --destructive-foreground: 345 15% 98%;
+    --warning: 35 60% 50%;
+    --warning-foreground: 345 15% 98%;
+    --success: 120 40% 45%;
+    --success-foreground: 345 15% 98%;
+    
+    --border: 213 15% 88%;
+    --input: 213 10% 92%;
+    --ring: 345 60% 50%;
+    
+    /* Soft sidebar for light mode */
+    --sidebar-background: 345 8% 98%;
+    --sidebar-foreground: 213 25% 35%;
+    --sidebar-primary: 345 70% 45%;
+    --sidebar-primary-foreground: 345 15% 98%;
+    --sidebar-accent: 213 10% 94%;
+    --sidebar-accent-foreground: 213 25% 35%;
+    --sidebar-border: 213 12% 90%;
+    --sidebar-ring: 345 60% 50%;
   }
 }
 

@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
@@ -59,12 +61,15 @@ function AppContent() {
         <div className="min-h-screen flex w-full cyber-grid">
           <AppSidebar />
           <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/50 px-4 bg-card/30 backdrop-blur-sm">
-              <SidebarTrigger className="-ml-1" />
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/40 px-4 bg-gradient-to-r from-card/40 via-card/30 to-card/20 backdrop-blur-xl">
+              <SidebarTrigger className="-ml-1 hover:bg-primary/10 hover:text-primary transition-colors duration-200" />
               <div className="flex-1" />
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="w-2 h-2 bg-success rounded-full pulse-status" />
-                <span className="font-cyber">X-AutoPentest Online</span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="w-2 h-2 bg-success rounded-full animate-pulse shadow-success/50 shadow-sm" />
+                  <span className="font-cyber font-medium">X-AutoPentest Online</span>
+                </div>
+                <ThemeToggle />
               </div>
             </header>
             <main className="flex-1 p-6">
@@ -117,13 +122,15 @@ function AppContent() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </TooltipProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="x-autopentest-theme">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
