@@ -5,10 +5,20 @@ A comprehensive cybersecurity platform built with modern web technologies and AI
 ## 🏗️ Repository Structure
 
 ```
-/frontend         # React/TypeScript frontend application
-/backend          # Backend API and services
-/model-ai         # AI/ML models and training
-/resources        # Documentation, research, and project files
+/frontend/            # React + Vite frontend application
+  /src/
+    /components/      # Reusable UI components with index exports
+    /pages/           # Route-level components (Dashboard, Login, Search, Settings)
+    /hooks/           # Custom React hooks (useAuth, useToast, etc.)
+    /lib/             # Utilities and API integration layer
+    /integrations/    # External service integrations (Supabase)
+/backend/             # NestJS backend API (planned)
+/model-ai/            # FastAPI AI services (planned)  
+/resources/           # Documentation, architecture, and branding
+  /architecture/      # Frontend, backend, and AI architecture docs
+  /deployment/        # Deployment and setup guides
+  /research/          # API integration research and planning
+  /branding/          # Brand assets and guidelines
 ```
 
 ## 🚀 Quick Start

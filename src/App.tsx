@@ -15,7 +15,8 @@ import MitigationCenter from "./pages/MitigationCenter";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import AIAssistant from "./pages/AIAssistant";
-import Auth from "./pages/Auth";
+import Login from "./pages/Login";
+import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,7 +49,7 @@ function AppContent() {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth" element={<Login />} />
           <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
       </BrowserRouter>
@@ -107,6 +108,11 @@ function AppContent() {
                 <Route path="/ai-assistant" element={
                   <ProtectedRoute>
                     <AIAssistant />
+                  </ProtectedRoute>
+                } />
+                <Route path="/search" element={
+                  <ProtectedRoute>
+                    <Search />
                   </ProtectedRoute>
                 } />
                 <Route path="/auth" element={<Navigate to="/" replace />} />
