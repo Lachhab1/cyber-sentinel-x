@@ -1,87 +1,78 @@
-# XAI-Tech Frontend
+# XAI-Tech Cybersecurity Platform
 
-Modern React-based cybersecurity platform frontend with AI integration.
+A comprehensive cybersecurity platform built with modern web technologies and AI integration.
+
+## 🏗️ Repository Structure
+
+```
+/frontend/            # React + Vite frontend application
+  /src/
+    /components/      # Reusable UI components with index exports
+    /pages/           # Route-level components (Dashboard, Login, Search, Settings)
+    /hooks/           # Custom React hooks (useAuth, useToast, etc.)
+    /lib/             # Utilities and API integration layer
+    /integrations/    # External service integrations (Supabase)
+/backend/             # NestJS backend API (planned)
+/model-ai/            # FastAPI AI services (planned)
+/resources/           # Documentation, architecture, and branding
+  /architecture/      # Frontend, backend, and AI architecture docs
+  /deployment/        # Deployment and setup guides
+  /research/          # API integration research and planning
+  /branding/          # Brand assets and guidelines
+```
 
 ## 🚀 Quick Start
 
+### Frontend Development
+
 ```bash
-# Install dependencies
+cd frontend
 npm install
-
-# Start development server
 npm run dev
-
-# Open http://localhost:8080
 ```
 
-## 🛠️ Development
+### Full Stack Development
 
-### Available Scripts
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run lint         # Run ESLint
-```
+1. Clone the repository
+2. Set up frontend (see `/frontend/README.md`)
+3. Set up backend (see `/backend/README.md`)
+4. Configure environment variables
+5. Run both services
 
-### Project Structure
-```
-src/
-├── components/      # Reusable UI components
-├── pages/          # Route components  
-├── hooks/          # Custom React hooks
-├── lib/            # Utilities and helpers
-└── integrations/   # External service integrations
-```
+## 📋 Project Status
 
-## 🎨 Tech Stack
+- ✅ Frontend MVP completed
+- 🔄 Backend integration in progress
+- 🔄 AI model integration pending
+- ✅ Documentation structure established
 
-- **React 18** with TypeScript
-- **Vite** for fast development and building
-- **Tailwind CSS** for styling
-- **shadcn/ui** component library
-- **React Router** for navigation
-- **Supabase** for backend services
+## 🛠️ Tech Stack
 
-## 🔧 Configuration
+### Frontend
 
-### Environment Variables
-Create `.env.local` file:
-```bash
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+- React 18 with TypeScript
+- Tailwind CSS + shadcn/ui
+- Vite build tool
+- React Router for navigation
+- Supabase client integration
 
-### Theme Customization
-Edit `src/index.css` and `tailwind.config.ts` to customize the design system.
+### Backend
 
-## 📱 Features
+- (To be implemented)
 
-- **Responsive Design**: Mobile-first approach
-- **Dark/Light Mode**: Theme switching with persistence  
-- **Authentication**: Supabase-powered auth system
-- **Real-time Updates**: Live data synchronization
-- **AI Assistant**: Interactive chat interface
-- **Dashboard**: Comprehensive security overview
+### AI/ML
 
-## 🔌 Backend Integration
+- (To be implemented)
 
-Ready for integration with custom backend APIs. See [API Integration Guide](../resources/api-integration.md) for details.
+## 🔗 Links
 
-## 📋 Development Guidelines
-
-1. Use TypeScript for all components
-2. Follow the established component patterns
-3. Use semantic design tokens from the design system
-4. Implement proper error handling
-5. Add loading states for async operations
-
-## 🚢 Deployment
-
-The frontend is designed to be deployed as a static site. See [Deployment Guide](../resources/deployment.md) for detailed instructions.
+- **Lovable Project**: https://lovable.dev/projects/3cc28240-506c-4cd4-83a2-5ad3abc31228
+- **GitHub Repository**: xai-tech organization (to be connected)
 
 ## 📚 Documentation
 
-- [Frontend Architecture](../resources/frontend-architecture.md)
-- [API Integration](../resources/api-integration.md)  
-- [Deployment Guide](../resources/deployment.md)
+Detailed documentation is available in the `/resources` directory:
+
+- [Frontend Architecture](resources/frontend-architecture.md)
+- [API Integration Guide](resources/api-integration.md)
+- [Deployment Guide](resources/deployment.md)
