@@ -8,12 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { Shield, Zap, Eye, Brain, Lock, Mail, Terminal, Cpu } from 'lucide-react';
+import { Shield, Zap, Eye, Brain, Lock, Mail, Terminal, Cpu, User } from 'lucide-react';
 
 export default function Auth() {
   const { user, loading, signUp, signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   if (loading) {
@@ -40,8 +41,12 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!displayName.trim()) {
+      alert('Please enter a display name');
+      return;
+    }
     setIsLoading(true);
-    await signUp(email, password);
+    await signUp(email, password, displayName);
     setIsLoading(false);
   };
 
@@ -161,6 +166,21 @@ export default function Auth() {
 
               <TabsContent value="signup" className="space-y-4">
                 <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="displayName" className="font-cyber text-primary">
+                      <User className="w-4 h-4 inline mr-2" />
+                      Display Name
+                    </Label>
+                    <Input
+                      id="displayName"
+                      type="text"
+                      placeholder="Enter your display name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      required
+                      className="bg-background/50 border-border/50 font-cyber"
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email" className="font-cyber text-primary">
                       <Mail className="w-4 h-4 inline mr-2" />

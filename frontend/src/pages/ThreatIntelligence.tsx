@@ -1,142 +1,213 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 import {
+  RefreshCw,
   Globe,
   AlertTriangle,
-  Activity,
   TrendingUp,
-  Eye,
-  MapPin,
-  Clock,
+  Activity,
   Shield,
-  RefreshCw,
-  ExternalLinkIcon
+  Eye,
+  Target,
+  Clock,
+  MapPin,
+  BarChart3,
+  Zap,
+  Database,
+  Wifi,
+  Server,
+  Lock,
+  AlertCircle,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
+
+interface ThreatFeed {
+  id: string;
+  name: string;
+  source: string;
+  status: 'active' | 'delayed' | 'offline';
+  totalThreats: number;
+  newThreats24h: number;
+  lastUpdate: string;
+  description: string;
+  category: string;
+}
+
+interface ThreatIOC {
+  id: string;
+  type: 'ip' | 'domain' | 'url' | 'hash' | 'email';
+  value: string;
+  threat: string;
+  confidence: 'low' | 'medium' | 'high';
+  firstSeen: string;
+  lastSeen: string;
+  tags: string[];
+}
+
+interface GeographicThreat {
+  country: string;
+  count: number;
+  percentage: number;
+  trend: 'up' | 'down' | 'stable';
+}
 
 export default function ThreatIntelligence() {
   const { toast } = useToast();
-  const [threatData, setThreatData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [threats, setThreats] = useState<any[]>([]);
+  const [threatAnalysis, setThreatAnalysis] = useState<any>(null);
 
-  const fetchThreatData = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('threat_intelligence')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      setThreatData(data || []);
-    } catch (error) {
-      console.error('Error fetching threat data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const refreshThreatData = async () => {
-    setRefreshing(true);
-    await fetchThreatData();
-    toast({
-      title: "Threat Intelligence Updated",
-      description: "Latest threat data has been synchronized.",
-    });
-  };
-
-  useEffect(() => {
-    fetchThreatData();
-  }, []);
-  const threatFeeds = [
+  // Sample threat intelligence feeds
+  const threatFeeds: ThreatFeed[] = [
     {
+      id: "feed-001",
       name: "Malware Command & Control",
       source: "abuse.ch",
       status: "active",
+      totalThreats: 1247,
+      newThreats24h: 23,
       lastUpdate: "2 minutes ago",
-      threats: 1247,
-      newThreats: 23
+      description: "Malware C&C server tracking and blacklisting",
+      category: "Malware"
     },
     {
+      id: "feed-002",
       name: "Botnet Tracking",
       source: "Spamhaus",
-      status: "active", 
+      status: "active",
+      totalThreats: 892,
+      newThreats24h: 12,
       lastUpdate: "5 minutes ago",
-      threats: 892,
-      newThreats: 12
+      description: "Botnet command and control infrastructure",
+      category: "Botnet"
     },
     {
+      id: "feed-003",
       name: "Phishing URLs",
       source: "PhishTank",
       status: "active",
+      totalThreats: 2156,
+      newThreats24h: 45,
       lastUpdate: "1 minute ago",
-      threats: 2156,
-      newThreats: 45
+      description: "Phishing website detection and reporting",
+      category: "Phishing"
     },
     {
+      id: "feed-004",
       name: "Tor Exit Nodes",
       source: "TorProject",
       status: "delayed",
+      totalThreats: 678,
+      newThreats24h: 3,
       lastUpdate: "45 minutes ago",
-      threats: 678,
-      newThreats: 3
+      description: "Tor exit node IP addresses",
+      category: "Anonymity"
     }
   ];
 
-  const recentIoCs = [
+  // Sample geographic threat distribution
+  const geographicThreats: GeographicThreat[] = [
+    { country: "Russia", count: 342, percentage: 27.4, trend: "up" },
+    { country: "China", count: 298, percentage: 23.9, trend: "up" },
+    { country: "North Korea", count: 156, percentage: 12.5, trend: "stable" },
+    { country: "Iran", count: 134, percentage: 10.7, trend: "down" },
+    { country: "Other", count: 290, percentage: 23.2, trend: "up" }
+  ];
+
+  // Sample IoCs
+  const sampleIOCs: ThreatIOC[] = [
     {
-      indicator: "185.220.101.42",
-      type: "IP Address",
-      threat: "Botnet C&C Server",
-      confidence: "High",
-      firstSeen: "2 hours ago",
-      country: "Russia",
-      asn: "AS12345 - Evil Corp",
-      tags: ["malware", "c2", "botnet"]
+      id: "ioc-001",
+      type: "ip",
+      value: "185.220.101.42",
+      threat: "APT29",
+      confidence: "high",
+      firstSeen: "2024-01-15T10:30:00Z",
+      lastSeen: "2024-01-27T14:22:00Z",
+      tags: ["apt", "russia", "cyber-espionage"]
     },
     {
-      indicator: "malicious-domain.xyz",
-      type: "Domain",
+      id: "ioc-002",
+      type: "domain",
+      value: "malware.example.com",
+      threat: "Emotet",
+      confidence: "medium",
+      firstSeen: "2024-01-20T08:15:00Z",
+      lastSeen: "2024-01-27T16:45:00Z",
+      tags: ["malware", "banking-trojan"]
+    },
+    {
+      id: "ioc-003",
+      type: "url",
+      value: "https://phish.example.com/login",
       threat: "Phishing Campaign",
-      confidence: "Medium",
-      firstSeen: "4 hours ago",
-      country: "Unknown",
-      asn: "Cloudflare",
-      tags: ["phishing", "fraud"]
-    },
-    {
-      indicator: "SHA256:a1b2c3d4...",
-      type: "File Hash",
-      threat: "Ransomware Payload",
-      confidence: "Critical",
-      firstSeen: "1 day ago",
-      country: "N/A",
-      asn: "N/A",
-      tags: ["ransomware", "malware"]
+      confidence: "high",
+      firstSeen: "2024-01-25T12:00:00Z",
+      lastSeen: "2024-01-27T18:30:00Z",
+      tags: ["phishing", "credential-theft"]
     }
   ];
 
-  const geographicThreats = [
-    { country: "Russia", threats: 342, percentage: 28 },
-    { country: "China", threats: 298, percentage: 24 },
-    { country: "North Korea", threats: 156, percentage: 13 },
-    { country: "Iran", threats: 134, percentage: 11 },
-    { country: "Other", threats: 290, percentage: 24 }
-  ];
+  useEffect(() => {
+    const loadThreatIntelligence = async () => {
+      try {
+        setLoading(true);
+        
+        // Load threats from backend
+        const threatsData = await api.threats.getAll();
+        setThreats(threatsData);
 
-  const getConfidenceColor = (confidence: string) => {
-    switch (confidence) {
-      case "Critical": return "destructive";
-      case "High": return "warning";
-      case "Medium": return "accent";
-      case "Low": return "muted";
-      default: return "muted";
+        // Load threat analysis
+        const analysisData = await api.threats.analyze();
+        setThreatAnalysis(analysisData);
+
+      } catch (error) {
+        console.error('Failed to load threat intelligence:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load threat intelligence data",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadThreatIntelligence();
+  }, [toast]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Simulate refresh
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Reload data
+      const threatsData = await api.threats.getAll();
+      setThreats(threatsData);
+
+      const analysisData = await api.threats.analyze();
+      setThreatAnalysis(analysisData);
+
+      toast({
+        title: "Refreshed",
+        description: "Threat intelligence data updated",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh threat intelligence data",
+        variant: "destructive",
+      });
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -149,6 +220,44 @@ export default function ThreatIntelligence() {
     }
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "active": return <CheckCircle className="w-4 h-4" />;
+      case "delayed": return <Clock className="w-4 h-4" />;
+      case "offline": return <XCircle className="w-4 h-4" />;
+      default: return <AlertCircle className="w-4 h-4" />;
+    }
+  };
+
+  const getConfidenceColor = (confidence: string) => {
+    switch (confidence) {
+      case "high": return "destructive";
+      case "medium": return "warning";
+      case "low": return "muted";
+      default: return "muted";
+    }
+  };
+
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case "up": return <TrendingUp className="w-4 h-4 text-destructive" />;
+      case "down": return <TrendingUp className="w-4 h-4 text-success rotate-180" />;
+      case "stable": return <Activity className="w-4 h-4 text-muted-foreground" />;
+      default: return <Activity className="w-4 h-4 text-muted-foreground" />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex items-center gap-3 text-primary font-cyber">
+          <Globe className="w-6 h-6 animate-spin" />
+          <span className="text-lg">Loading Threat Intelligence...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -157,175 +266,212 @@ export default function ThreatIntelligence() {
           <h1 className="text-3xl font-bold text-primary font-cyber">Threat Intelligence</h1>
           <p className="text-muted-foreground font-cyber">Global threat landscape and indicators of compromise</p>
         </div>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
             size="sm"
-            onClick={refreshThreatData}
+            onClick={handleRefresh}
             disabled={refreshing}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            {refreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="w-2 h-2 bg-success rounded-full pulse-status" />
-            <span className="font-cyber">Live Feeds</span>
-          </div>
         </div>
       </div>
 
-      {/* Threat Feed Status */}
-      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-primary font-cyber">
-            <Globe className="w-5 h-5" />
-            Threat Intelligence Feeds
-          </CardTitle>
-          <CardDescription>Real-time threat data from multiple sources</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            {threatFeeds.map((feed, index) => (
-              <div key={index} className="p-4 rounded-lg border border-border/50 bg-muted/20">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-sm">{feed.name}</h3>
-                    <p className="text-xs text-muted-foreground">{feed.source}</p>
-                  </div>
-                  <Badge variant={getStatusColor(feed.status) as any} className="text-xs">
-                    {feed.status}
-                  </Badge>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Total Threats:</span>
-                    <span className="font-cyber text-primary">{feed.threats.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">New (24h):</span>
-                    <span className="font-cyber text-warning">+{feed.newThreats}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="w-3 h-3" />
-                    {feed.lastUpdate}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Recent IoCs */}
-        <Card className="xl:col-span-2 bg-card/50 backdrop-blur-sm border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary font-cyber">
-              <AlertTriangle className="w-5 h-5" />
-              Recent Indicators of Compromise
-            </CardTitle>
-            <CardDescription>Newly discovered threat indicators</CardDescription>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total IoCs</CardTitle>
+            <Database className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="text-center py-8">Loading threat data...</div>
-            ) : (
-              <div className="space-y-4">
-                {threatData.length > 0 ? threatData.map((threat) => (
-                  <div key={threat.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/50">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="font-cyber">
-                          {threat.ip_address || threat.domain || 'Unknown'}
-                        </Badge>
-                        <span className="text-sm font-medium text-card-foreground">
-                          {threat.threat_type || 'Threat'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {threat.geolocation?.country || 'Unknown'}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {new Date(threat.last_seen || threat.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                    <Badge 
-                      variant={threat.confidence_level > 80 ? 'destructive' : threat.confidence_level > 60 ? 'outline' : 'secondary'} 
-                      className="font-cyber"
-                    >
-                      {threat.confidence_level || 0}% Confidence
-                    </Badge>
-                  </div>
-                )) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No threat intelligence data available. Database connection established but no threats detected.
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="text-2xl font-bold text-primary font-cyber">12,847</div>
+            <p className="text-xs text-muted-foreground">
+              +156 in last 24h
+            </p>
           </CardContent>
         </Card>
 
-        {/* Geographic Threat Distribution */}
-        <div className="space-y-6">
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary font-cyber">
-                <MapPin className="w-5 h-5" />
-                Geographic Distribution
-              </CardTitle>
-              <CardDescription>Threats by country (last 24h)</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {geographicThreats.map((country, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{country.country}</span>
-                      <span className="font-cyber text-primary">{country.threats}</span>
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
+            <Target className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive font-cyber">23</div>
+            <p className="text-xs text-muted-foreground">
+              +3 new campaigns
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Blocked IPs</CardTitle>
+            <Shield className="h-4 w-4 text-success" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-success font-cyber">3,456</div>
+            <p className="text-xs text-muted-foreground">
+              +89 in last 24h
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Detection Rate</CardTitle>
+            <BarChart3 className="h-4 w-4 text-warning" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-warning font-cyber">94.2%</div>
+            <p className="text-xs text-muted-foreground">
+              +2.1% improvement
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Threat Intelligence Feeds */}
+        <Card className="xl:col-span-2 bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary font-cyber">
+              <Wifi className="w-5 h-5" />
+              Threat Intelligence Feeds
+            </CardTitle>
+            <CardDescription>Real-time threat data from multiple sources</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {threatFeeds.map((feed) => (
+                <div key={feed.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-semibold">{feed.name}</h3>
+                      <Badge variant="outline" className="text-xs">{feed.source}</Badge>
+                      <Badge variant={getStatusColor(feed.status) as any} className="flex items-center gap-1">
+                        {getStatusIcon(feed.status)}
+                        {feed.status}
+                      </Badge>
                     </div>
-                    <div className="w-full bg-muted/30 rounded-full h-2">
-                      <div 
-                        className="bg-gradient-to-r from-warning to-destructive h-2 rounded-full"
-                        style={{ width: `${country.percentage}%` }}
-                      />
+                    <p className="text-sm text-muted-foreground">{feed.description}</p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>Total Threats: {feed.totalThreats.toLocaleString()}</span>
+                      <span>New (24h): +{feed.newThreats24h}</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {feed.lastUpdate}
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Quick Stats */}
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-            <CardHeader>
-              <CardTitle className="text-primary font-cyber">Intelligence Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Total IoCs</span>
-                <span className="font-cyber text-primary text-lg">12,847</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Active Campaigns</span>
-                <span className="font-cyber text-warning text-lg">23</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Blocked IPs</span>
-                <span className="font-cyber text-success text-lg">3,456</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Detection Rate</span>
-                <span className="font-cyber text-primary text-lg">94.2%</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Geographic Distribution */}
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary font-cyber">
+              <MapPin className="w-5 h-5" />
+              Geographic Distribution
+            </CardTitle>
+            <CardDescription>Threats by country (last 24h)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {geographicThreats.map((threat, index) => (
+                <div key={threat.country} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{threat.country}</span>
+                      {getTrendIcon(threat.trend)}
+                    </div>
+                    <span className="font-bold">{threat.count}</span>
+                  </div>
+                  <Progress value={threat.percentage} className="h-2" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Recent Indicators of Compromise */}
+      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary font-cyber">
+            <AlertTriangle className="w-5 h-5" />
+            Recent Indicators of Compromise
+          </CardTitle>
+          <CardDescription>Newly discovered threat indicators</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {threats.length > 0 ? (
+            <div className="space-y-4">
+              {threats.slice(0, 5).map((threat) => (
+                <div key={threat.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-semibold">{threat.title}</h3>
+                      <Badge variant={getConfidenceColor(threat.severity) as any}>
+                        {threat.severity}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{threat.description}</p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(threat.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No threat intelligence data available. Database connection established but no threats detected.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Intelligence Summary */}
+      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary font-cyber">
+            <BarChart3 className="w-5 h-5" />
+            Intelligence Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">12,847</div>
+              <div className="text-sm text-muted-foreground">Total IoCs</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-destructive">23</div>
+              <div className="text-sm text-muted-foreground">Active Campaigns</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-success">3,456</div>
+              <div className="text-sm text-muted-foreground">Blocked IPs</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-warning">94.2%</div>
+              <div className="text-sm text-muted-foreground">Detection Rate</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,15 +1,17 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { api, User } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, displayName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,12 +21,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Check for existing backend token and load user profile
+  const loadBackendUser = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        const userProfile = await api.auth.getProfile();
+        setUser(userProfile);
+      }
+    } catch (error) {
+      console.error('Failed to load backend user:', error);
+      // Clear invalid token
+      localStorage.removeItem('auth_token');
+    }
+  };
+
   useEffect(() => {
-    // Set up auth state listener
+    // Load backend user on mount
+    loadBackendUser().finally(() => setLoading(false));
+
+    // Set up Supabase auth state listener (for real-time features)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
         setLoading(false);
 
         if (event === 'SIGNED_IN') {
@@ -35,53 +54,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Check for existing session
+    // Check for existing Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl
-      }
-    });
-
-    if (error) {
-      toast.error(`Sign up failed: ${error.message}`);
-    } else {
-      toast.success('Check your email for verification link');
+  const signUp = async (email: string, password: string, displayName: string) => {
+    try {
+      const response = await api.auth.register({ email, password, displayName });
+      setUser(response.user);
+      toast.success('Successfully registered and signed in');
+      return { error: null };
+    } catch (error: any) {
+      const errorMessage = error.message || 'Registration failed';
+      toast.error(errorMessage);
+      return { error: { message: errorMessage } };
     }
-
-    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      toast.error(`Sign in failed: ${error.message}`);
+    try {
+      const response = await api.auth.login({ email, password });
+      setUser(response.user);
+      toast.success('Successfully signed in');
+      return { error: null };
+    } catch (error: any) {
+      const errorMessage = error.message || 'Sign in failed';
+      toast.error(errorMessage);
+      return { error: { message: errorMessage } };
     }
-
-    return { error };
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error(`Sign out failed: ${error.message}`);
+    try {
+      await api.auth.logout();
+      setUser(null);
+      toast.success('Successfully signed out');
+    } catch (error: any) {
+      console.error('Sign out error:', error);
+      // Clear user state even if API call fails
+      setUser(null);
+      localStorage.removeItem('auth_token');
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      const userProfile = await api.auth.getProfile();
+      setUser(userProfile);
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+      // If refresh fails, user might be logged out
+      setUser(null);
+      localStorage.removeItem('auth_token');
     }
   };
 
@@ -92,7 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       signUp,
       signIn,
-      signOut
+      signOut,
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>

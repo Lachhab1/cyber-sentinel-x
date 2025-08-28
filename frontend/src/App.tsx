@@ -18,6 +18,7 @@ import AIAssistant from "./pages/AIAssistant";
 import Login from "./pages/Login";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
+import TestIntegration from "./pages/TestIntegration";
 
 const queryClient = new QueryClient();
 
@@ -113,6 +114,11 @@ function AppContent() {
                 <Route path="/search" element={
                   <ProtectedRoute>
                     <Search />
+                  </ProtectedRoute>
+                } />
+                <Route path="/test-integration" element={
+                  <ProtectedRoute>
+                    <TestIntegration />
                   </ProtectedRoute>
                 } />
                 <Route path="/auth" element={<Navigate to="/" replace />} />

@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import {
   Activity,
   AlertTriangle,
@@ -22,6 +22,30 @@ import {
 export default function Dashboard() {
   const { toast } = useToast();
   const [scanRunning, setScanRunning] = useState(false);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch dashboard data from backend
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const stats = await api.dashboard.getStats();
+        setDashboardData(stats);
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [toast]);
 
   const handleSecurityScan = async () => {
     setScanRunning(true);
@@ -59,85 +83,97 @@ export default function Dashboard() {
   const handleUserActivity = () => {
     window.location.href = "/settings";
   };
-  const stats = [
+
+  // Calculate stats from backend data
+  const stats = dashboardData ? [
     { 
       title: "Active Threats", 
-      value: "23", 
+      value: dashboardData.totalThreats.toString(), 
       change: "+12%", 
       icon: AlertTriangle,
       status: "critical",
       trend: "up"
     },
     { 
-      title: "Systems Protected", 
-      value: "1,247", 
+      title: "Security Incidents", 
+      value: dashboardData.totalIncidents.toString(), 
       change: "+5%", 
       icon: Shield,
-      status: "success",
+      status: "warning",
       trend: "up"
     },
     { 
-      title: "Security Score", 
-      value: "94%", 
+      title: "Active Projects", 
+      value: dashboardData.totalProjects.toString(), 
       change: "+2%", 
       icon: TrendingUp,
       status: "success",
       trend: "up"
     },
     { 
-      title: "Live Connections", 
-      value: "45,892", 
+      title: "Systems Protected", 
+      value: "1,247", 
       change: "+8%", 
       icon: Activity,
       status: "info",
       trend: "up"
     }
-  ];
+  ] : [];
 
-  const recentIncidents = [
-    {
-      id: "INC-2024-001",
-      title: "SQL Injection Attempt Detected",
-      severity: "High",
-      time: "2 minutes ago",
-      source: "192.168.1.45",
-      status: "investigating"
-    },
-    {
-      id: "INC-2024-002", 
-      title: "Unusual Login Pattern from Russia",
-      severity: "Medium",
-      time: "15 minutes ago",
-      source: "185.220.101.42",
-      status: "mitigated"
-    },
-    {
-      id: "INC-2024-003",
-      title: "Port Scan Activity Detected",
-      severity: "Low",
-      time: "1 hour ago", 
-      source: "10.0.0.100",
-      status: "resolved"
-    }
-  ];
+  const recentIncidents = dashboardData?.recentIncidents?.map((incident: any) => ({
+    id: incident.id,
+    title: incident.title,
+    severity: incident.status === 'open' ? 'High' : incident.status === 'investigating' ? 'Medium' : 'Low',
+    time: new Date(incident.createdAt).toLocaleString(),
+    source: incident.project?.name || 'Unknown',
+    status: incident.status
+  })) || [];
+
+  const recentThreats = dashboardData?.recentThreats?.map((threat: any) => ({
+    id: threat.id,
+    title: threat.title,
+    severity: threat.severity,
+    time: new Date(threat.createdAt).toLocaleString(),
+    description: threat.description
+  })) || [];
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "High": return "destructive";
-      case "Medium": return "warning";
-      case "Low": return "muted";
-      default: return "muted";
+      case "High":
+      case "high":
+      case "critical": 
+        return "destructive";
+      case "Medium":
+      case "medium": 
+        return "warning";
+      case "Low":
+      case "low": 
+        return "muted";
+      default: 
+        return "muted";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "investigating": return "warning";
-      case "mitigated": return "accent";
+      case "open": return "destructive";
       case "resolved": return "success";
+      case "closed": return "muted";
       default: return "muted";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex items-center gap-3 text-primary font-cyber">
+          <Scan className="w-6 h-6 animate-spin" />
+          <span className="text-lg">Loading Security Dashboard...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -193,32 +229,39 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentIncidents.map((incident) => (
-                <div key={incident.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <Badge variant={getSeverityColor(incident.severity) as any} className="font-cyber">
-                        {incident.severity}
-                      </Badge>
-                      <span className="font-cyber text-sm text-muted-foreground">{incident.id}</span>
+              {recentIncidents.length > 0 ? (
+                recentIncidents.map((incident) => (
+                  <div key={incident.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <Badge variant={getSeverityColor(incident.severity) as any} className="font-cyber">
+                          {incident.severity}
+                        </Badge>
+                        <span className="font-cyber text-sm text-muted-foreground">{incident.id}</span>
+                      </div>
+                      <p className="font-medium text-card-foreground">{incident.title}</p>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {incident.time}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Globe className="w-3 h-3" />
+                          {incident.source}
+                        </span>
+                      </div>
                     </div>
-                    <p className="font-medium text-card-foreground">{incident.title}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {incident.time}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Globe className="w-3 h-3" />
-                        {incident.source}
-                      </span>
-                    </div>
+                    <Badge variant={getStatusColor(incident.status) as any} className="font-cyber">
+                      {incident.status}
+                    </Badge>
                   </div>
-                  <Badge variant={getStatusColor(incident.status) as any} className="font-cyber">
-                    {incident.status}
-                  </Badge>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>No recent incidents</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>

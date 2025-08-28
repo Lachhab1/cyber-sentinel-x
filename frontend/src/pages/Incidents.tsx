@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import {
   AlertTriangle,
   Search,
@@ -22,7 +22,9 @@ import {
   ChevronRight,
   Activity,
   Terminal,
-  Cpu
+  Cpu,
+  Plus,
+  Loader2
 } from "lucide-react";
 
 export default function Incidents() {
@@ -32,68 +34,61 @@ export default function Incidents() {
   const [isInvestigating, setIsInvestigating] = useState(false);
   const [isMitigating, setIsMitigating] = useState(false);
   const [actionDialog, setActionDialog] = useState<{ type: 'investigate' | 'mitigate' | null, incident: any }>({ type: null, incident: null });
+  const [incidents, setIncidents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filteredIncidents, setFilteredIncidents] = useState<any[]>([]);
 
-  const incidents = [
-    {
-      id: "INC-2024-001",
-      title: "SQL Injection Attempt Detected",
-      description: "Multiple SQL injection payloads detected from suspicious IP address",
-      severity: "Critical",
-      status: "investigating",
-      time: "2 minutes ago",
-      source: "192.168.1.45",
-      technique: "T1190 - Exploit Public-Facing Application",
-      aiConfidence: 95,
-      affectedSystems: ["web-server-01", "database-primary"],
-      tags: ["web", "database", "injection"]
-    },
-    {
-      id: "INC-2024-002",
-      title: "Suspicious Login Activity from Russia",
-      description: "Multiple failed login attempts followed by successful login from geographically distant location",
-      severity: "High",
-      status: "mitigated",
-      time: "15 minutes ago",
-      source: "185.220.101.42",
-      technique: "T1110 - Brute Force",
-      aiConfidence: 87,
-      affectedSystems: ["auth-server"],
-      tags: ["authentication", "geolocation"]
-    },
-    {
-      id: "INC-2024-003",
-      title: "Port Scan Activity Detected",
-      description: "Systematic port scanning activity detected from internal network",
-      severity: "Medium",
-      status: "investigating",
-      time: "1 hour ago",
-      source: "10.0.0.100",
-      technique: "T1046 - Network Service Scanning",
-      aiConfidence: 78,
-      affectedSystems: ["network-scanner"],
-      tags: ["reconnaissance", "network"]
-    },
-    {
-      id: "INC-2024-004",
-      title: "Malware Command & Control Communication",
-      description: "Suspicious outbound connections to known C&C domains detected",
-      severity: "Critical",
-      status: "contained",
-      time: "3 hours ago",
-      source: "workstation-045",
-      technique: "T1071 - Application Layer Protocol",
-      aiConfidence: 92,
-      affectedSystems: ["workstation-045"],
-      tags: ["malware", "c2", "communication"]
+  // Fetch incidents from backend
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        setLoading(true);
+        const data = await api.incidents.getAll();
+        setIncidents(data);
+      } catch (error) {
+        console.error('Failed to fetch incidents:', error);
+        toast.error("Failed to load incidents");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIncidents();
+  }, []);
+
+  // Filter incidents based on search and severity
+  useEffect(() => {
+    let filtered = incidents;
+
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(incident =>
+        incident.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        incident.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (incident.project?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
-  ];
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "Critical": return "destructive";
-      case "High": return "warning";
-      case "Medium": return "accent";
-      case "Low": return "muted";
+    // Filter by severity (if we had severity field in incidents)
+    if (selectedSeverity !== "all") {
+      // For now, we'll use status as a proxy for severity
+      filtered = filtered.filter(incident => {
+        if (selectedSeverity === "critical") return incident.status === "open";
+        if (selectedSeverity === "high") return incident.status === "investigating";
+        if (selectedSeverity === "medium") return incident.status === "resolved";
+        return true;
+      });
+    }
+
+    setFilteredIncidents(filtered);
+  }, [incidents, searchQuery, selectedSeverity]);
+
+  const getSeverityColor = (status: string) => {
+    switch (status) {
+      case "open": return "destructive";
+      case "investigating": return "warning";
+      case "resolved": return "success";
+      case "closed": return "muted";
       default: return "muted";
     }
   };
@@ -101,9 +96,9 @@ export default function Incidents() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "investigating": return "warning";
-      case "mitigated": return "accent";
-      case "contained": return "success";
+      case "open": return "destructive";
       case "resolved": return "success";
+      case "closed": return "muted";
       default: return "muted";
     }
   };
@@ -118,29 +113,61 @@ export default function Incidents() {
     setActionDialog({ type: 'investigate', incident });
     setIsInvestigating(true);
     
-    // Simulate investigation process
-    toast.success(`Initiating investigation for ${incident.id}`);
-    
-    setTimeout(() => {
-      toast.success("Investigation completed successfully");
+    try {
+      await api.incidents.updateStatus(incident.id, 'investigating');
+      toast.success(`Investigation initiated for ${incident.id}`);
+      
+      // Refresh incidents
+      const updatedIncidents = await api.incidents.getAll();
+      setIncidents(updatedIncidents);
+    } catch (error) {
+      toast.error("Failed to update incident status");
+    } finally {
       setIsInvestigating(false);
       setActionDialog({ type: null, incident: null });
-    }, 3000);
+    }
   };
 
   const handleMitigate = async (incident: any) => {
     setActionDialog({ type: 'mitigate', incident });
     setIsMitigating(true);
     
-    // Simulate mitigation process
-    toast.success(`Deploying countermeasures for ${incident.id}`);
-    
-    setTimeout(() => {
-      toast.success("Threat successfully mitigated");
+    try {
+      await api.incidents.updateStatus(incident.id, 'resolved');
+      toast.success(`Threat successfully mitigated for ${incident.id}`);
+      
+      // Refresh incidents
+      const updatedIncidents = await api.incidents.getAll();
+      setIncidents(updatedIncidents);
+    } catch (error) {
+      toast.error("Failed to update incident status");
+    } finally {
       setIsMitigating(false);
       setActionDialog({ type: null, incident: null });
-    }, 4000);
+    }
   };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
+    return `${Math.floor(diffInMinutes / 1440)} days ago`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex items-center gap-3 text-primary font-cyber">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span className="text-lg">Loading Security Incidents...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -169,7 +196,7 @@ export default function Incidents() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search incidents, IPs, techniques..."
+                placeholder="Search incidents, status, projects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-background/50"
@@ -189,127 +216,144 @@ export default function Incidents() {
 
       {/* Incidents List */}
       <div className="space-y-4">
-        {incidents.map((incident) => (
-          <Card key={incident.id} className="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/70 transition-all duration-200 cursor-pointer">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-3 flex-1">
-                  {/* Header Row */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Badge variant={getSeverityColor(incident.severity) as any} className="font-cyber">
-                        {incident.severity}
-                      </Badge>
-                      <Badge variant={getStatusColor(incident.status) as any} className="font-cyber">
-                        {incident.status}
-                      </Badge>
-                      <span className="font-cyber text-sm text-muted-foreground">{incident.id}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      {incident.time}
-                    </div>
-                  </div>
-
-                  {/* Title and Description */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-card-foreground mb-1">{incident.title}</h3>
-                    <p className="text-sm text-muted-foreground">{incident.description}</p>
-                  </div>
-
-                  {/* Technical Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-accent" />
-                      <span className="text-muted-foreground">Source:</span>
-                      <code className="font-cyber bg-muted/30 px-2 py-1 rounded text-primary">
-                        {incident.source}
-                      </code>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-warning" />
-                      <span className="text-muted-foreground">MITRE:</span>
-                      <code className="font-cyber bg-muted/30 px-2 py-1 rounded text-warning">
-                        {incident.technique}
-                      </code>
-                    </div>
-                  </div>
-
-                  {/* AI Analysis */}
-                  <div className="flex items-center justify-between bg-muted/20 rounded-lg p-3">
-                    <div className="flex items-center gap-3">
-                      <Brain className="w-5 h-5 text-accent" />
-                      <div>
-                        <p className="text-sm font-medium">AI Analysis Confidence</p>
-                        <p className="text-xs text-muted-foreground">Machine learning assessment</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`text-lg font-bold font-cyber ${getConfidenceColor(incident.aiConfidence)}`}>
-                        {incident.aiConfidence}%
-                      </div>
-                      <div className="flex gap-1 mt-1">
-                        {[...Array(5)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-2 h-1 rounded ${
-                              i < Math.floor(incident.aiConfidence / 20) ? 'bg-success' : 'bg-muted'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Tags and Actions */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-2 flex-wrap">
-                      {incident.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
+        {filteredIncidents.length > 0 ? (
+          filteredIncidents.map((incident) => (
+            <Card key={incident.id} className="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/70 transition-all duration-200 cursor-pointer">
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-3 flex-1">
+                    {/* Header Row */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Badge variant={getSeverityColor(incident.status) as any} className="font-cyber">
+                          {incident.status === 'open' ? 'Critical' : incident.status === 'investigating' ? 'High' : 'Medium'}
                         </Badge>
-                      ))}
+                        <Badge variant={getStatusColor(incident.status) as any} className="font-cyber">
+                          {incident.status}
+                        </Badge>
+                        <span className="font-cyber text-sm text-muted-foreground">{incident.id}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="w-3 h-3" />
+                        {formatTime(incident.createdAt)}
+                      </div>
                     </div>
-                     <div className="flex gap-2">
-                       <Button 
-                         variant="outline" 
-                         size="sm" 
-                         onClick={() => handleInvestigate(incident)}
-                         disabled={isInvestigating || isMitigating}
-                         className="font-cyber hover:bg-accent/20"
-                       >
-                         <Eye className="w-4 h-4 mr-2" />
-                         Investigate
-                       </Button>
-                       <Button 
-                         variant="outline" 
-                         size="sm" 
-                         onClick={() => handleMitigate(incident)}
-                         disabled={isInvestigating || isMitigating}
-                         className="font-cyber hover:bg-destructive/20 hover:text-destructive"
-                       >
-                         <Zap className="w-4 h-4 mr-2" />
-                         Mitigate
-                       </Button>
-                       <Button variant="ghost" size="sm" className="font-cyber">
-                         <ChevronRight className="w-4 h-4" />
-                       </Button>
-                     </div>
+
+                    {/* Title and Description */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-card-foreground mb-1">{incident.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {incident.project?.name ? `Project: ${incident.project.name}` : 'No project assigned'}
+                      </p>
+                    </div>
+
+                    {/* Technical Details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-accent" />
+                        <span className="text-muted-foreground">Status:</span>
+                        <code className="font-cyber bg-muted/30 px-2 py-1 rounded text-primary">
+                          {incident.status}
+                        </code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Target className="w-4 h-4 text-warning" />
+                        <span className="text-muted-foreground">Created:</span>
+                        <code className="font-cyber bg-muted/30 px-2 py-1 rounded text-warning">
+                          {new Date(incident.createdAt).toLocaleDateString()}
+                        </code>
+                      </div>
+                    </div>
+
+                    {/* AI Analysis */}
+                    <div className="flex items-center justify-between bg-muted/20 rounded-lg p-3">
+                      <div className="flex items-center gap-3">
+                        <Brain className="w-5 h-5 text-accent" />
+                        <div>
+                          <p className="text-sm font-medium">AI Analysis Confidence</p>
+                          <p className="text-xs text-muted-foreground">Machine learning assessment</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-lg font-bold font-cyber ${getConfidenceColor(85)}`}>
+                          85%
+                        </div>
+                        <div className="flex gap-1 mt-1">
+                          {[...Array(5)].map((_, i) => (
+                            <div
+                              key={i}
+                              className={`w-2 h-1 rounded ${
+                                i < Math.floor(85 / 20) ? 'bg-success' : 'bg-muted'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tags and Actions */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs">
+                          {incident.status}
+                        </Badge>
+                        {incident.project?.name && (
+                          <Badge variant="outline" className="text-xs">
+                            {incident.project.name}
+                          </Badge>
+                        )}
+                      </div>
+                       <div className="flex gap-2">
+                         <Button 
+                           variant="outline" 
+                           size="sm" 
+                           onClick={() => handleInvestigate(incident)}
+                           disabled={isInvestigating || isMitigating}
+                           className="font-cyber hover:bg-accent/20"
+                         >
+                           <Eye className="w-4 h-4 mr-2" />
+                           Investigate
+                         </Button>
+                         <Button 
+                           variant="outline" 
+                           size="sm" 
+                           onClick={() => handleMitigate(incident)}
+                           disabled={isInvestigating || isMitigating}
+                           className="font-cyber hover:bg-destructive/20 hover:text-destructive"
+                         >
+                           <Zap className="w-4 h-4 mr-2" />
+                           Mitigate
+                         </Button>
+                         <Button variant="ghost" size="sm" className="font-cyber">
+                           <ChevronRight className="w-4 h-4" />
+                         </Button>
+                       </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">No incidents found</h3>
+            <p className="text-sm text-muted-foreground">
+              {searchQuery ? 'Try adjusting your search criteria' : 'No security incidents have been detected yet'}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Load More */}
-      <div className="text-center">
-        <Button variant="outline" className="font-cyber">
-          <Terminal className="w-4 h-4 mr-2" />
-          Load More Incidents
-        </Button>
-      </div>
+      {filteredIncidents.length > 0 && (
+        <div className="text-center">
+          <Button variant="outline" className="font-cyber">
+            <Terminal className="w-4 h-4 mr-2" />
+            Load More Incidents
+          </Button>
+        </div>
+      )}
 
       {/* Action Dialog */}
       <Dialog open={actionDialog.type !== null} onOpenChange={() => setActionDialog({ type: null, incident: null })}>
@@ -355,11 +399,11 @@ export default function Incidents() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Activity className="w-4 h-4 text-accent" />
-                  <span>Severity: {actionDialog.incident.severity}</span>
+                  <span>Status: {actionDialog.incident.status}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Globe className="w-4 h-4 text-warning" />
-                  <span>Source: {actionDialog.incident.source}</span>
+                  <span>Project: {actionDialog.incident.project?.name || 'None'}</span>
                 </div>
               </div>
             )}

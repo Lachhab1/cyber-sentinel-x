@@ -1,9 +1,13 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { api } from "@/lib/api";
 import {
   FileText,
   Download,
@@ -16,10 +20,22 @@ import {
   CheckCircle,
   Clock,
   Eye,
-  Settings
+  Settings,
+  Loader2,
+  Plus
 } from "lucide-react";
 
 export default function Reports() {
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [reportForm, setReportForm] = useState({
+    title: '',
+    type: 'summary',
+    projectId: ''
+  });
+
   const reportTemplates = [
     {
       id: "security-summary",
@@ -28,7 +44,8 @@ export default function Reports() {
       category: "Executive",
       frequency: "Weekly",
       lastGenerated: "2 days ago",
-      size: "2.4 MB"
+      size: "2.4 MB",
+      type: "summary"
     },
     {
       id: "incident-analysis",
@@ -37,7 +54,8 @@ export default function Reports() {
       category: "Technical",
       frequency: "Daily",
       lastGenerated: "6 hours ago",
-      size: "8.7 MB"
+      size: "8.7 MB",
+      type: "comprehensive"
     },
     {
       id: "threat-intelligence",
@@ -46,7 +64,8 @@ export default function Reports() {
       category: "Intelligence",
       frequency: "Daily",
       lastGenerated: "12 hours ago",
-      size: "3.1 MB"
+      size: "3.1 MB",
+      type: "detailed"
     },
     {
       id: "compliance-audit",
@@ -55,38 +74,8 @@ export default function Reports() {
       category: "Compliance",
       frequency: "Monthly",
       lastGenerated: "5 days ago",
-      size: "12.3 MB"
-    }
-  ];
-
-  const recentReports = [
-    {
-      name: "Weekly Security Summary - Week 47",
-      type: "PDF",
-      generated: "2024-11-20 14:30",
-      size: "2.4 MB",
-      status: "completed"
-    },
-    {
-      name: "Incident Response Report - Nov 2024",
-      type: "PDF",
-      generated: "2024-11-19 09:15",
-      size: "8.7 MB", 
-      status: "completed"
-    },
-    {
-      name: "Threat Intelligence Brief - Daily",
-      type: "Markdown",
-      generated: "2024-11-20 06:00",
-      size: "1.2 MB",
-      status: "completed"
-    },
-    {
-      name: "Compliance Audit - Q4 2024",
-      type: "PDF",
-      generated: "2024-11-18 16:45",
       size: "12.3 MB",
-      status: "processing"
+      type: "comprehensive"
     }
   ];
 
@@ -96,6 +85,70 @@ export default function Reports() {
     { label: "Executive Briefings", value: "28", change: "+8%", period: "This month" },
     { label: "Compliance Reports", value: "12", change: "0%", period: "This month" }
   ];
+
+  // Fetch reports from backend
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        setLoading(true);
+        // Since we don't have a getReports endpoint, we'll simulate it
+        // In a real implementation, you'd have a reports endpoint
+        setReports([]);
+      } catch (error) {
+        console.error('Failed to fetch reports:', error);
+        toast.error("Failed to load reports");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  const handleGenerateReport = async (template?: any) => {
+    if (template) {
+      setReportForm({
+        title: template.name,
+        type: template.type,
+        projectId: ''
+      });
+    }
+    setShowGenerateDialog(true);
+  };
+
+  const handleSubmitReport = async () => {
+    if (!reportForm.title.trim()) {
+      toast.error("Please enter a report title");
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const result = await api.reports.generate(reportForm);
+      toast.success(`Report "${result.title}" generated successfully`);
+      setShowGenerateDialog(false);
+      setReportForm({ title: '', type: 'summary', projectId: '' });
+      
+      // Refresh reports list
+      // In a real implementation, you'd fetch the updated reports list
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+      toast.error("Failed to generate report");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleDownloadReport = async (reportId: string) => {
+    try {
+      const report = await api.reports.download(reportId);
+      // In a real implementation, you'd trigger a download
+      toast.success("Report download started");
+    } catch (error) {
+      console.error('Failed to download report:', error);
+      toast.error("Failed to download report");
+    }
+  };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -116,6 +169,17 @@ export default function Reports() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex items-center gap-3 text-primary font-cyber">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span className="text-lg">Loading Security Reports...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -129,8 +193,8 @@ export default function Reports() {
             <Settings className="w-4 h-4 mr-2" />
             Configure
           </Button>
-          <Button size="sm">
-            <FileText className="w-4 h-4 mr-2" />
+          <Button size="sm" onClick={() => handleGenerateReport()}>
+            <Plus className="w-4 h-4 mr-2" />
             New Report
           </Button>
         </div>
@@ -180,7 +244,11 @@ export default function Reports() {
                       </div>
                       <p className="text-sm text-muted-foreground">{template.description}</p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleGenerateReport(template)}
+                    >
                       <Download className="w-4 h-4 mr-2" />
                       Generate
                     </Button>
@@ -216,55 +284,35 @@ export default function Reports() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="report-name">Report Name</Label>
-                <Input id="report-name" placeholder="Enter report name" />
+                <Input 
+                  id="report-name" 
+                  placeholder="Enter report name"
+                  value={reportForm.title}
+                  onChange={(e) => setReportForm({ ...reportForm, title: e.target.value })}
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="report-type">Report Type</Label>
-                <Select>
+                <Select 
+                  value={reportForm.type}
+                  onValueChange={(value) => setReportForm({ ...reportForm, type: value })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="incident">Incident Analysis</SelectItem>
-                    <SelectItem value="threat">Threat Intelligence</SelectItem>
-                    <SelectItem value="compliance">Compliance</SelectItem>
                     <SelectItem value="summary">Executive Summary</SelectItem>
+                    <SelectItem value="comprehensive">Comprehensive Analysis</SelectItem>
+                    <SelectItem value="detailed">Detailed Report</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="date-range">Date Range</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="24h">Last 24 hours</SelectItem>
-                    <SelectItem value="7d">Last 7 days</SelectItem>
-                    <SelectItem value="30d">Last 30 days</SelectItem>
-                    <SelectItem value="custom">Custom Range</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="format">Output Format</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select format" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pdf">PDF Report</SelectItem>
-                    <SelectItem value="markdown">Markdown</SelectItem>
-                    <SelectItem value="html">HTML Report</SelectItem>
-                    <SelectItem value="json">JSON Data</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={() => handleGenerateReport()}
+              >
                 <FileText className="w-4 h-4 mr-2" />
                 Generate Report
               </Button>
@@ -278,29 +326,109 @@ export default function Reports() {
               <CardDescription>Recently generated security reports</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {recentReports.map((report, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">{report.name}</p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>{report.type}</span>
-                        <span>{report.size}</span>
-                        <Badge variant={getStatusColor(report.status) as any} className="text-xs">
-                          {report.status}
-                        </Badge>
+              {reports.length > 0 ? (
+                <div className="space-y-3">
+                  {reports.map((report, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">{report.title}</p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>{report.type}</span>
+                          <span>{new Date(report.createdAt).toLocaleDateString()}</span>
+                        </div>
                       </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleDownloadReport(report.id)}
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="sm">
-                      <Download className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No reports generated yet</p>
+                  <p className="text-sm">Generate your first report using the templates above</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Generate Report Dialog */}
+      <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
+        <DialogContent className="bg-card/90 backdrop-blur-lg border-border/50 font-cyber">
+          <DialogHeader>
+            <DialogTitle className="text-primary flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Generate Security Report
+            </DialogTitle>
+            <DialogDescription className="font-cyber">
+              Create a new security report with custom parameters
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="dialog-title">Report Title</Label>
+              <Input 
+                id="dialog-title"
+                placeholder="Enter report title"
+                value={reportForm.title}
+                onChange={(e) => setReportForm({ ...reportForm, title: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="dialog-type">Report Type</Label>
+              <Select 
+                value={reportForm.type}
+                onValueChange={(value) => setReportForm({ ...reportForm, type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="summary">Executive Summary</SelectItem>
+                  <SelectItem value="comprehensive">Comprehensive Analysis</SelectItem>
+                  <SelectItem value="detailed">Detailed Report</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowGenerateDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubmitReport}
+                disabled={generating || !reportForm.title.trim()}
+                className="flex-1"
+              >
+                {generating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Generate Report
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
