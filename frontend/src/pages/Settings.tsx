@@ -71,10 +71,10 @@ export default function Settings() {
 
   const integrations = [
     {
-      name: "Supabase",
-      description: "Database and authentication backend",
+      name: "XAI-Tech Backend",
+      description: "NestJS API and authentication backend",
       status: "connected",
-      type: "database"
+      type: "api"
     },
     {
       name: "Slack",

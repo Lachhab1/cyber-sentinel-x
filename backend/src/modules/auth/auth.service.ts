@@ -4,6 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../database/prisma.service';
 import { LoginDto, RegisterDto } from '../../common/dto/auth.dto';
 import { UsersService } from '../users/users.service';
+import { LoggerService } from '../../common/services/logger.service';
 
 @Injectable()
 export class AuthService {
@@ -11,24 +12,31 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private usersService: UsersService,
+    private logger: LoggerService,
   ) {}
 
   async login(loginDto: LoginDto) {
+    this.logger.log(`Login attempt for user: ${loginDto.email}`, 'AuthService');
+    
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
     });
 
     if (!user) {
+      this.logger.warn(`Failed login attempt for non-existent user: ${loginDto.email}`, 'AuthService');
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
     if (!isPasswordValid) {
+      this.logger.warn(`Failed login attempt for user: ${loginDto.email}`, 'AuthService');
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
+
+    this.logger.log(`Successful login for user: ${user.email}`, 'AuthService');
 
     return {
       access_token: accessToken,
