@@ -48,18 +48,18 @@ function AppContent() {
 
   if (!user) {
     return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/auth" element={<Login />} />
-          <Route path="*" element={<Navigate to="/auth" replace />} />
-        </Routes>
-      </BrowserRouter>
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Routes>
+            <Route path="/auth" element={<Login />} />
+            <Route path="*" element={<Navigate to="/auth" replace />} />
+          </Routes>
+        </BrowserRouter>
     );
   }
 
-  return (
-    <BrowserRouter>
-      <SidebarProvider defaultOpen={true}>
+      return (
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <SidebarProvider defaultOpen={true}>
         <div className="min-h-screen flex w-full cyber-grid">
           <AppSidebar />
           <SidebarInset>

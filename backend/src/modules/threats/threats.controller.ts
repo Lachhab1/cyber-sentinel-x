@@ -32,6 +32,20 @@ export class ThreatsController {
     return this.threatsService.analyze();
   }
 
+  @Get('feeds')
+  @ApiOperation({ summary: 'Get threat intelligence feeds' })
+  @ApiResponse({ status: 200, description: 'Threat feeds retrieved successfully' })
+  async getThreatFeeds() {
+    return this.threatsService.getThreatFeeds();
+  }
+
+  @Get('mitigation')
+  @ApiOperation({ summary: 'Get mitigation recommendations' })
+  @ApiResponse({ status: 200, description: 'Mitigation recommendations retrieved successfully' })
+  async getMitigationRecommendations() {
+    return this.threatsService.getMitigationRecommendations();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get threat by ID' })
   @ApiResponse({ status: 200, description: 'Threat retrieved successfully' })

@@ -126,6 +126,7 @@ export default function Auth() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      autoComplete="email"
                       className="bg-background/50 border-border/50 font-cyber"
                     />
                   </div>
@@ -141,6 +142,7 @@ export default function Auth() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      autoComplete="current-password"
                       className="bg-background/50 border-border/50 font-cyber"
                     />
                   </div>
@@ -193,6 +195,7 @@ export default function Auth() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      autoComplete="email"
                       className="bg-background/50 border-border/50 font-cyber"
                     />
                   </div>
@@ -208,6 +211,7 @@ export default function Auth() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      autoComplete="new-password"
                       className="bg-background/50 border-border/50 font-cyber"
                     />
                   </div>
