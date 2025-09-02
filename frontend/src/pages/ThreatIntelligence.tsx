@@ -24,7 +24,8 @@ import {
   Lock,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  Brain
 } from "lucide-react";
 
 interface ThreatFeed {
@@ -57,145 +58,75 @@ interface GeographicThreat {
   trend: 'up' | 'down' | 'stable';
 }
 
+interface ThreatAnalysis {
+  totalThreats: number;
+  severityBreakdown: {
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+  };
+  threatTrends: {
+    last24h: number;
+    last7d: number;
+    trend: string;
+    percentageChange: number;
+  };
+  geographicThreats: GeographicThreat[];
+  iocAnalysis: {
+    total: number;
+    byType: Record<string, number>;
+    recent: any[];
+  };
+  aiRecommendations: string[];
+  threatScore: number;
+  lastUpdated: string;
+}
+
 export default function ThreatIntelligence() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [threats, setThreats] = useState<any[]>([]);
-  const [threatAnalysis, setThreatAnalysis] = useState<any>(null);
-
-  // Sample threat intelligence feeds
-  const threatFeeds: ThreatFeed[] = [
-    {
-      id: "feed-001",
-      name: "Malware Command & Control",
-      source: "abuse.ch",
-      status: "active",
-      totalThreats: 1247,
-      newThreats24h: 23,
-      lastUpdate: "2 minutes ago",
-      description: "Malware C&C server tracking and blacklisting",
-      category: "Malware"
-    },
-    {
-      id: "feed-002",
-      name: "Botnet Tracking",
-      source: "Spamhaus",
-      status: "active",
-      totalThreats: 892,
-      newThreats24h: 12,
-      lastUpdate: "5 minutes ago",
-      description: "Botnet command and control infrastructure",
-      category: "Botnet"
-    },
-    {
-      id: "feed-003",
-      name: "Phishing URLs",
-      source: "PhishTank",
-      status: "active",
-      totalThreats: 2156,
-      newThreats24h: 45,
-      lastUpdate: "1 minute ago",
-      description: "Phishing website detection and reporting",
-      category: "Phishing"
-    },
-    {
-      id: "feed-004",
-      name: "Tor Exit Nodes",
-      source: "TorProject",
-      status: "delayed",
-      totalThreats: 678,
-      newThreats24h: 3,
-      lastUpdate: "45 minutes ago",
-      description: "Tor exit node IP addresses",
-      category: "Anonymity"
-    }
-  ];
-
-  // Sample geographic threat distribution
-  const geographicThreats: GeographicThreat[] = [
-    { country: "Russia", count: 342, percentage: 27.4, trend: "up" },
-    { country: "China", count: 298, percentage: 23.9, trend: "up" },
-    { country: "North Korea", count: 156, percentage: 12.5, trend: "stable" },
-    { country: "Iran", count: 134, percentage: 10.7, trend: "down" },
-    { country: "Other", count: 290, percentage: 23.2, trend: "up" }
-  ];
-
-  // Sample IoCs
-  const sampleIOCs: ThreatIOC[] = [
-    {
-      id: "ioc-001",
-      type: "ip",
-      value: "185.220.101.42",
-      threat: "APT29",
-      confidence: "high",
-      firstSeen: "2024-01-15T10:30:00Z",
-      lastSeen: "2024-01-27T14:22:00Z",
-      tags: ["apt", "russia", "cyber-espionage"]
-    },
-    {
-      id: "ioc-002",
-      type: "domain",
-      value: "malware.example.com",
-      threat: "Emotet",
-      confidence: "medium",
-      firstSeen: "2024-01-20T08:15:00Z",
-      lastSeen: "2024-01-27T16:45:00Z",
-      tags: ["malware", "banking-trojan"]
-    },
-    {
-      id: "ioc-003",
-      type: "url",
-      value: "https://phish.example.com/login",
-      threat: "Phishing Campaign",
-      confidence: "high",
-      firstSeen: "2024-01-25T12:00:00Z",
-      lastSeen: "2024-01-27T18:30:00Z",
-      tags: ["phishing", "credential-theft"]
-    }
-  ];
+  const [threatAnalysis, setThreatAnalysis] = useState<ThreatAnalysis | null>(null);
+  const [threatFeeds, setThreatFeeds] = useState<ThreatFeed[]>([]);
 
   useEffect(() => {
-    const loadThreatIntelligence = async () => {
-      try {
-        setLoading(true);
-        
-        // Load threats from backend
-        const threatsData = await api.threats.getAll();
-        setThreats(threatsData);
-
-        // Load threat analysis
-        const analysisData = await api.threats.analyze();
-        setThreatAnalysis(analysisData);
-
-      } catch (error) {
-        console.error('Failed to load threat intelligence:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load threat intelligence data",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadThreatIntelligence();
-  }, [toast]);
+  }, []);
+
+  const loadThreatIntelligence = async () => {
+    try {
+      setLoading(true);
+      
+      // Load threats
+      const threatsResponse = await api.getThreats();
+      setThreats(threatsResponse.data || []);
+      
+      // Load threat analysis
+      const analysisResponse = await api.getThreatAnalysis();
+      setThreatAnalysis(analysisResponse.data?.analysis || null);
+      
+      // Load threat feeds
+      const feedsResponse = await api.getThreatFeeds();
+      setThreatFeeds(feedsResponse.data || []);
+      
+    } catch (error) {
+      console.error('Failed to load threat intelligence:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load threat intelligence data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRefresh = async () => {
-    setRefreshing(true);
     try {
-      // Simulate refresh
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Reload data
-      const threatsData = await api.threats.getAll();
-      setThreats(threatsData);
-
-      const analysisData = await api.threats.analyze();
-      setThreatAnalysis(analysisData);
-
+      setRefreshing(true);
+      await loadThreatIntelligence();
       toast({
         title: "Refreshed",
         description: "Threat intelligence data updated",
@@ -247,6 +178,12 @@ export default function ThreatIntelligence() {
     }
   };
 
+  const getThreatScoreColor = (score: number) => {
+    if (score >= 70) return "destructive";
+    if (score >= 40) return "warning";
+    return "success";
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -264,7 +201,7 @@ export default function ThreatIntelligence() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-primary font-cyber">Threat Intelligence</h1>
-          <p className="text-muted-foreground font-cyber">Global threat landscape and indicators of compromise</p>
+          <p className="text-muted-foreground font-cyber">Real-time threat landscape and AI-powered analysis</p>
         </div>
         <div className="flex items-center gap-3">
           <Button 
@@ -287,9 +224,11 @@ export default function ThreatIntelligence() {
             <Database className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary font-cyber">12,847</div>
+            <div className="text-2xl font-bold text-primary font-cyber">
+              {threatAnalysis?.iocAnalysis?.total || 0}
+            </div>
             <p className="text-xs text-muted-foreground">
-              +156 in last 24h
+              +{threatAnalysis?.threatTrends?.last24h || 0} in last 24h
             </p>
           </CardContent>
         </Card>
@@ -300,178 +239,276 @@ export default function ThreatIntelligence() {
             <Target className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive font-cyber">23</div>
+            <div className="text-2xl font-bold text-primary font-cyber">
+              {threats.filter(t => t.status === 'active').length}
+            </div>
             <p className="text-xs text-muted-foreground">
-              +3 new campaigns
+              {threatAnalysis?.threatTrends?.trend === 'increasing' ? 'Trending up' : 'Stable'}
             </p>
           </CardContent>
         </Card>
 
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Blocked IPs</CardTitle>
-            <Shield className="h-4 w-4 text-success" />
+            <CardTitle className="text-sm font-medium">Threat Score</CardTitle>
+            <Shield className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success font-cyber">3,456</div>
+            <div className={`text-2xl font-bold font-cyber text-${getThreatScoreColor(threatAnalysis?.threatScore || 0)}`}>
+              {threatAnalysis?.threatScore || 0}
+            </div>
             <p className="text-xs text-muted-foreground">
-              +89 in last 24h
+              {threatAnalysis?.threatScore >= 70 ? 'High Risk' : 
+               threatAnalysis?.threatScore >= 40 ? 'Medium Risk' : 'Low Risk'}
             </p>
           </CardContent>
         </Card>
 
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Detection Rate</CardTitle>
-            <BarChart3 className="h-4 w-4 text-warning" />
+            <CardTitle className="text-sm font-medium">AI Insights</CardTitle>
+            <Brain className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning font-cyber">94.2%</div>
+            <div className="text-2xl font-bold text-primary font-cyber">
+              {threatAnalysis?.aiRecommendations?.length || 0}
+            </div>
             <p className="text-xs text-muted-foreground">
-              +2.1% improvement
+              AI-generated recommendations
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Threat Intelligence Feeds */}
-        <Card className="xl:col-span-2 bg-card/50 backdrop-blur-sm border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary font-cyber">
-              <Wifi className="w-5 h-5" />
-              Threat Intelligence Feeds
-            </CardTitle>
-            <CardDescription>Real-time threat data from multiple sources</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {threatFeeds.map((feed) => (
-                <div key={feed.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-semibold">{feed.name}</h3>
-                      <Badge variant="outline" className="text-xs">{feed.source}</Badge>
-                      <Badge variant={getStatusColor(feed.status) as any} className="flex items-center gap-1">
-                        {getStatusIcon(feed.status)}
-                        {feed.status}
-                      </Badge>
+      {/* Threat Score and Trends */}
+      {threatAnalysis && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="w-5 h-5" />
+                Threat Risk Score
+              </CardTitle>
+              <CardDescription>
+                AI-calculated risk assessment based on current threats
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Risk Level</span>
+                  <Badge variant={getThreatScoreColor(threatAnalysis.threatScore) === 'destructive' ? 'destructive' : 
+                                 getThreatScoreColor(threatAnalysis.threatScore) === 'warning' ? 'secondary' : 'default'}>
+                    {threatAnalysis.threatScore >= 70 ? 'HIGH' : 
+                     threatAnalysis.threatScore >= 40 ? 'MEDIUM' : 'LOW'}
+                  </Badge>
+                </div>
+                <Progress value={threatAnalysis.threatScore} className="h-2" />
+                <div className="text-xs text-muted-foreground">
+                  Score: {threatAnalysis.threatScore}/100
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-muted-foreground">24h Change</div>
+                  <div className="font-semibold">{threatAnalysis.threatTrends.last24h} threats</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">7d Change</div>
+                  <div className="font-semibold">{threatAnalysis.threatTrends.last7d} threats</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                Severity Breakdown
+              </CardTitle>
+              <CardDescription>
+                Distribution of threats by severity level
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Critical</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 bg-destructive/20 rounded-full h-2">
+                      <div 
+                        className="bg-destructive h-2 rounded-full" 
+                        style={{ width: `${(threatAnalysis.severityBreakdown.critical / threatAnalysis.totalThreats) * 100}%` }}
+                      />
                     </div>
-                    <p className="text-sm text-muted-foreground">{feed.description}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>Total Threats: {feed.totalThreats.toLocaleString()}</span>
-                      <span>New (24h): +{feed.newThreats24h}</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {feed.lastUpdate}
-                      </span>
-                    </div>
+                    <span className="text-sm font-medium">{threatAnalysis.severityBreakdown.critical}</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">High</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 bg-orange-500/20 rounded-full h-2">
+                      <div 
+                        className="bg-orange-500 h-2 rounded-full" 
+                        style={{ width: `${(threatAnalysis.severityBreakdown.high / threatAnalysis.totalThreats) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium">{threatAnalysis.severityBreakdown.high}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Medium</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 bg-yellow-500/20 rounded-full h-2">
+                      <div 
+                        className="bg-yellow-500 h-2 rounded-full" 
+                        style={{ width: `${(threatAnalysis.severityBreakdown.medium / threatAnalysis.totalThreats) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium">{threatAnalysis.severityBreakdown.medium}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Low</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 bg-green-500/20 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full" 
+                        style={{ width: `${(threatAnalysis.severityBreakdown.low / threatAnalysis.totalThreats) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium">{threatAnalysis.severityBreakdown.low}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        {/* Geographic Distribution */}
+      {/* AI Recommendations */}
+      {threatAnalysis?.aiRecommendations && threatAnalysis.aiRecommendations.length > 0 && (
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary font-cyber">
-              <MapPin className="w-5 h-5" />
-              Geographic Distribution
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-primary" />
+              AI-Powered Recommendations
             </CardTitle>
-            <CardDescription>Threats by country (last 24h)</CardDescription>
+            <CardDescription>
+              Intelligent security recommendations based on threat analysis
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {geographicThreats.map((threat, index) => (
-                <div key={threat.country} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{threat.country}</span>
-                      {getTrendIcon(threat.trend)}
-                    </div>
-                    <span className="font-bold">{threat.count}</span>
-                  </div>
-                  <Progress value={threat.percentage} className="h-2" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {threatAnalysis.aiRecommendations.map((recommendation, index) => (
+                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                  <Shield className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">{recommendation}</span>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
-      </div>
+      )}
 
-      {/* Recent Indicators of Compromise */}
+      {/* Threat Intelligence Feeds */}
       <Card className="bg-card/50 backdrop-blur-sm border-border/50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-primary font-cyber">
-            <AlertTriangle className="w-5 h-5" />
-            Recent Indicators of Compromise
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="w-5 h-5" />
+            Threat Intelligence Feeds
           </CardTitle>
-          <CardDescription>Newly discovered threat indicators</CardDescription>
+          <CardDescription>
+            Real-time threat feeds and their current status
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {threats.length > 0 ? (
-            <div className="space-y-4">
-              {threats.slice(0, 5).map((threat) => (
-                <div key={threat.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-semibold">{threat.title}</h3>
-                      <Badge variant={getConfidenceColor(threat.severity) as any}>
-                        {threat.severity}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{threat.description}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {new Date(threat.createdAt).toLocaleString()}
-                      </span>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {threatFeeds.map((feed) => (
+              <div key={feed.id} className="p-4 rounded-lg border border-border/50 bg-background/50">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h4 className="font-semibold text-sm">{feed.name}</h4>
+                    <p className="text-xs text-muted-foreground">{feed.source}</p>
+                  </div>
+                  <Badge variant={getStatusColor(feed.status) as any} className="text-xs">
+                    {getStatusIcon(feed.status)}
+                    {feed.status}
+                  </Badge>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Total Threats:</span>
+                    <span className="font-medium">{feed.totalThreats}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>New (24h):</span>
+                    <span className="font-medium text-primary">{feed.newThreats24h}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Last Update:</span>
+                    <span className="text-muted-foreground">{feed.lastUpdate}</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No threat intelligence data available. Database connection established but no threats detected.</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Intelligence Summary */}
-      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-primary font-cyber">
-            <BarChart3 className="w-5 h-5" />
-            Intelligence Summary
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">12,847</div>
-              <div className="text-sm text-muted-foreground">Total IoCs</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-destructive">23</div>
-              <div className="text-sm text-muted-foreground">Active Campaigns</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-success">3,456</div>
-              <div className="text-sm text-muted-foreground">Blocked IPs</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-warning">94.2%</div>
-              <div className="text-sm text-muted-foreground">Detection Rate</div>
-            </div>
+                
+                <div className="mt-3 pt-3 border-t border-border/30">
+                  <Badge variant="outline" className="text-xs">
+                    {feed.category}
+                  </Badge>
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* Recent Threats */}
+      {threats.length > 0 && (
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
+              Recent Threats
+            </CardTitle>
+            <CardDescription>
+              Latest threats detected in your environment
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {threats.slice(0, 5).map((threat) => (
+                <div key={threat.id} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background/50">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${
+                      threat.severity === 'critical' ? 'bg-destructive' :
+                      threat.severity === 'high' ? 'bg-orange-500' :
+                      threat.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                    }`} />
+                    <div>
+                      <div className="font-medium text-sm">{threat.title || threat.name}</div>
+                      <div className="text-xs text-muted-foreground">{threat.description}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {threat.severity}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {threat.category}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

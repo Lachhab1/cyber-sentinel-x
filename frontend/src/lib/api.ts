@@ -277,6 +277,14 @@ class ApiClient {
   async getThreatAnalysis() {
     return await this.request<any>('/threats/analysis');
   }
+
+  async getThreatFeeds() {
+    return await this.request<any>('/threats/feeds');
+  }
+
+  async getMitigationRecommendations() {
+    return await this.request<any>('/threats/mitigation');
+  }
   
   // Incident management methods
   async getIncidents() {
@@ -460,4 +468,9 @@ export const api = {
     chat: apiClient.sendChatMessage.bind(apiClient),
     analyze: apiClient.analyzeFile.bind(apiClient),
   },
+  // Direct API methods for threat intelligence
+  getThreats: apiClient.getThreats.bind(apiClient),
+  getThreatAnalysis: apiClient.getThreatAnalysis.bind(apiClient),
+  getThreatFeeds: apiClient.getThreatFeeds.bind(apiClient),
+  getMitigationRecommendations: apiClient.getMitigationRecommendations.bind(apiClient),
 };

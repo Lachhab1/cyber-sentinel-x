@@ -5,6 +5,8 @@ from typing import List, Optional, Dict, Any
 import os
 import httpx
 import uvicorn
+from datetime import datetime, timedelta
+import re
 
 
 class ChatRequest(BaseModel):
@@ -35,6 +37,20 @@ class LogAnalysisResponse(BaseModel):
     findings: List[LogFinding]
     summary: str
     recommendations: List[str]
+
+
+class ThreatAnalysisRequest(BaseModel):
+    threats: List[Dict[str, Any]]
+    incidents: List[Dict[str, Any]]
+    timeframe: str = "24h"
+
+
+class ThreatAnalysisResponse(BaseModel):
+    analysis: Dict[str, Any]
+    recommendations: List[str]
+    patterns: List[str]
+    risk_score: float
+    mitre_techniques: List[str]
 
 
 app = FastAPI(title="Cyber Sentinel X - AI Service", version="0.1.0")
@@ -88,6 +104,108 @@ async def chat(req: ChatRequest):
         ]
 
     return ChatResponse(reply=reply, mitre_techniques=mitre or None, recommendations=recs)
+
+
+@app.post("/analyze/threats", response_model=ThreatAnalysisResponse)
+async def analyze_threats(req: ThreatAnalysisRequest):
+    """Analyze threats and incidents to provide AI-powered insights"""
+    
+    # Extract patterns from threats and incidents
+    patterns = []
+    mitre_techniques = set()
+    risk_indicators = []
+    
+    # Analyze threats
+    for threat in req.threats:
+        if threat.get('category'):
+            patterns.append(f"{threat['category']} threats detected")
+        
+        if threat.get('severity') == 'critical':
+            risk_indicators.append(10)
+        elif threat.get('severity') == 'high':
+            risk_indicators.append(7)
+        elif threat.get('severity') == 'medium':
+            risk_indicators.append(4)
+        else:
+            risk_indicators.append(1)
+    
+    # Analyze incidents
+    for incident in req.incidents:
+        if incident.get('type'):
+            patterns.append(f"{incident['type']} incidents occurring")
+        
+        if incident.get('status') == 'open':
+            risk_indicators.append(5)
+    
+    # Calculate risk score (0-100)
+    risk_score = min(100, sum(risk_indicators) / len(risk_indicators) * 10) if risk_indicators else 0
+    
+    # Generate AI recommendations based on patterns
+    recommendations = []
+    if any('sql' in p.lower() for p in patterns):
+        recommendations.extend([
+            "Implement WAF rules for SQL injection protection",
+            "Enable input validation and sanitization",
+            "Use parameterized queries in all database operations"
+        ])
+        mitre_techniques.add("T1190")
+    
+    if any('phishing' in p.lower() for p in patterns):
+        recommendations.extend([
+            "Deploy email security gateways",
+            "Implement user awareness training",
+            "Enable URL reputation checking"
+        ])
+        mitre_techniques.add("T1566")
+    
+    if any('malware' in p.lower() for p in patterns):
+        recommendations.extend([
+            "Deploy endpoint detection and response (EDR)",
+            "Implement application whitelisting",
+            "Enable real-time malware scanning"
+        ])
+        mitre_techniques.add("T1204")
+    
+    if any('brute force' in p.lower() for p in patterns):
+        recommendations.extend([
+            "Implement account lockout policies",
+            "Enable multi-factor authentication",
+            "Deploy rate limiting on authentication endpoints"
+        ])
+        mitre_techniques.add("T1110")
+    
+    # Add general recommendations
+    if risk_score > 70:
+        recommendations.extend([
+            "Immediate incident response team activation required",
+            "Implement emergency security controls",
+            "Conduct threat hunting across all systems"
+        ])
+    elif risk_score > 40:
+        recommendations.extend([
+            "Increase monitoring and alerting",
+            "Review and update security policies",
+            "Conduct security awareness training"
+        ])
+    else:
+        recommendations.extend([
+            "Continue routine security monitoring",
+            "Update threat intelligence feeds",
+            "Conduct regular security assessments"
+        ])
+    
+    return ThreatAnalysisResponse(
+        analysis={
+            "total_threats": len(req.threats),
+            "total_incidents": len(req.incidents),
+            "patterns_detected": len(patterns),
+            "risk_level": "high" if risk_score > 70 else "medium" if risk_score > 40 else "low"
+        },
+        recommendations=recommendations,
+        patterns=patterns,
+        risk_score=risk_score,
+        mitre_techniques=list(mitre_techniques)
+    )
 
 
 @app.post("/analyze/logs", response_model=LogAnalysisResponse)
