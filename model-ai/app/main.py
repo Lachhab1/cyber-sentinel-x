@@ -1,7 +1,9 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
+import os
+import httpx
 import uvicorn
 
 
@@ -141,6 +143,53 @@ async def analyze_file(file: UploadFile = File(...)):
     lines = content.splitlines()
     return await analyze_logs(LogAnalysisRequest(lines=lines, source=file.filename))
 
+
+class LokiAnalysisRequest(BaseModel):
+    query: str
+    limit: Optional[int] = 500
+    start_ns: Optional[int] = None  # nanoseconds epoch
+    end_ns: Optional[int] = None
+
+
+@app.post("/analyze/loki", response_model=LogAnalysisResponse)
+async def analyze_loki(req: LokiAnalysisRequest):
+    loki_url = os.getenv("LOKI_URL", "http://localhost:3100")
+    api_url = f"{loki_url.rstrip('/')}/loki/api/v1/query_range"
+
+    params: Dict[str, Any] = {"query": req.query, "limit": req.limit or 500}
+    if req.start_ns is not None:
+        params["start"] = str(req.start_ns)
+    if req.end_ns is not None:
+        params["end"] = str(req.end_ns)
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(api_url, params=params)
+            r.raise_for_status()
+            data = r.json()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Loki request failed: {e}")
+
+    # Extract log lines from Loki matrix/streams
+    lines: List[str] = []
+    result_type = data.get("data", {}).get("resultType")
+    results = data.get("data", {}).get("result", [])
+    if result_type == "streams":
+        for stream in results:
+            for ts, line in stream.get("values", []):
+                lines.append(line)
+    elif result_type == "matrix":
+        for series in results:
+            for ts, value in series.get("values", []):
+                lines.append(str(value))
+    else:
+        # try instant vector or scalar fallbacks
+        for item in results:
+            v = item.get("value")
+            if isinstance(v, list) and len(v) == 2:
+                lines.append(str(v[1]))
+
+    return await analyze_logs(LogAnalysisRequest(lines=lines, source="loki"))
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

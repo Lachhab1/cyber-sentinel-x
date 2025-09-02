@@ -58,6 +58,38 @@ services:
     depends_on:
       - loki
 
+  model-ai:
+    build: ../model-ai
+    container_name: xai_tech_model_ai
+    environment:
+      - LOKI_URL=http://loki:3100
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+  backend:
+    build: .
+    container_name: xai_tech_backend
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://user:password@postgres:5432/xai_tech
+      JWT_SECRET: your-super-secret-key
+      PORT: 4000
+      NODE_ENV: development
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   # backend:
   #   build: .
   #   container_name: xai_tech_backend

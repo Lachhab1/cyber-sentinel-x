@@ -358,15 +358,50 @@ class ApiClient {
     };
   }
   
-  // AI Integration methods (placeholder for future AI service)
+  // AI Integration methods
+  private getAiBaseUrl() {
+    const envUrl = (import.meta as any).env?.VITE_AI_API_URL as string | undefined;
+    return envUrl && envUrl.length > 0 ? envUrl : 'http://localhost:8000';
+  }
+
   async sendChatMessage(message: string) {
-    // TODO: Implement when AI service is ready
-    throw new Error('AI service not implemented yet');
+    const url = `${this.getAiBaseUrl()}/chat`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.detail || `AI Error: ${response.status}`);
+    }
+    return await response.json();
   }
   
   async analyzeFile(file: File) {
-    // TODO: Implement when AI service is ready
-    throw new Error('AI service not implemented yet');
+    const url = `${this.getAiBaseUrl()}/analyze/file`;
+    const form = new FormData();
+    form.append('file', file);
+    const response = await fetch(url, { method: 'POST', body: form });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.detail || `AI Error: ${response.status}`);
+    }
+    return await response.json();
+  }
+
+  async analyzeLogs(lines: string[]) {
+    const url = `${this.getAiBaseUrl()}/analyze/logs`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lines }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.detail || `AI Error: ${response.status}`);
+    }
+    return await response.json();
   }
 }
 
